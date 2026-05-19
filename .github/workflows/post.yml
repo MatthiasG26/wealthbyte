@@ -42,4 +42,5 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
         run: python post.py
