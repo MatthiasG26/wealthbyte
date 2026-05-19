@@ -39,11 +39,12 @@ LUXURY_QUERIES = [
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
 
 MUSIC_URLS = [
-    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kai_Engel/Satin/Kai_Engel_-_07_-_Porcelain.mp3",
-    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kai_Engel/Satin/Kai_Engel_-_01_-_Satin.mp3",
-    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kai_Engel/Satin/Kai_Engel_-_05_-_Intermezzo.mp3",
-    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3",
-    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/WFMU/Broke_For_Free/Directionless_EP/Broke_For_Free_-_01_-_Night_Owl.mp3",
+    # Deep cinematic / luxury ambient (Kevin MacLeod — royalty free)
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Slow%20Burn.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deep%20Haze.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Black%20Vortex.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Floating%20Cities.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ghost%20Story.mp3",
 ]
 
 
@@ -198,7 +199,7 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
     bg_clip = VideoFileClip(bg_path)
 
     # Make bg loop if shorter than needed
-    secs_per_word = 0.27
+    secs_per_word = 0.17
     all_words = hook.split() + [w for l in body_lines for w in l.split()] + ["Follow", "for", "daily", "money", "tips"]
     total_duration = max(15, len(all_words) * secs_per_word + 5)
 

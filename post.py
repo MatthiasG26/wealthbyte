@@ -40,35 +40,49 @@ def generate_content(content_type: str) -> str:
 
     prompts = {
         "money_fact": (
-            "Write a surprising personal finance fact for a short video.\n"
-            "Line 1 (hook, under 60 chars): Start with '💡 Did you know?'\n"
-            "Lines 2-4: Explain the fact simply, 1 sentence each.\n"
-            "Last line: End with an engaging question."
+            "Write a short viral finance video script. Use a shocking, thought-provoking hook.\n"
+            "Line 1 (hook): A bold, surprising financial truth — under 55 chars. "
+            "Examples: 'The middle class buys liabilities and calls them assets.' "
+            "'Saving money won't make you rich. Investing will.' "
+            "'Your job is designed to keep you comfortable enough to never quit.'\n"
+            "Lines 2-4: Back it up with 3 punchy, clear sentences.\n"
+            "Last line: A sharp engaging question that makes people comment."
         ),
         "mistake_to_avoid": (
-            "Write about one money mistake people in their 20s-30s make.\n"
-            "Line 1 (hook, under 60 chars): Start with '🚨 Stop doing this:'\n"
-            "Lines 2-4: Explain the mistake and what to do instead.\n"
-            "Last line: End with an engaging question."
+            "Write a short viral finance video script about a money mistake.\n"
+            "Line 1 (hook): Bold statement under 55 chars. "
+            "Examples: 'Most people will retire broke because of this.' "
+            "'Stop paying yourself last. Pay yourself first.' "
+            "'Buying a new car is the fastest way to stay poor.'\n"
+            "Lines 2-4: Explain the mistake and what to do instead — punchy and clear.\n"
+            "Last line: A sharp engaging question."
         ),
         "quick_tip": (
-            "Give one actionable money tip someone can use today.\n"
-            "Line 1 (hook, under 60 chars): Start with '💰 Money tip:'\n"
-            "Lines 2-4: Explain why it works and how to do it.\n"
-            "Last line: End with an engaging question."
+            "Write a short viral finance video script with one powerful money tip.\n"
+            "Line 1 (hook): Bold, direct statement under 55 chars. "
+            "Examples: 'One account. Change your financial life.' "
+            "'Automate your savings and forget they exist.' "
+            "'The best investment you can make costs nothing.'\n"
+            "Lines 2-4: Explain why it works — concise and compelling.\n"
+            "Last line: A sharp engaging question."
         ),
         "how_it_works": (
-            "Explain one financial concept simply (compound interest, index funds, "
-            "credit score, Roth IRA, emergency fund, etc.)\n"
-            "Line 1 (hook, under 60 chars): Start with '📊 How [concept] works:'\n"
-            "Lines 2-4: Explain in plain language.\n"
-            "Last line: End with an engaging question."
+            "Write a short viral finance video script explaining a financial concept.\n"
+            "Line 1 (hook): A bold hook under 55 chars that makes people stop scrolling. "
+            "Examples: 'Compound interest is how the rich get richer.' "
+            "'Your credit score is costing you thousands.' "
+            "'Index funds beat 90% of professional investors.'\n"
+            "Lines 2-4: Explain in plain, powerful language.\n"
+            "Last line: A sharp engaging question."
         ),
         "mindset": (
-            "Share a money mindset shift that separates wealthy from broke people.\n"
-            "Line 1 (hook, under 60 chars): Start with '🧠 Wealthy people think differently:'\n"
-            "Lines 2-4: Explain the mindset shift.\n"
-            "Last line: End with an engaging question."
+            "Write a short viral finance video script about a wealth mindset shift.\n"
+            "Line 1 (hook): A bold, jarring truth under 55 chars. "
+            "Examples: 'The middle class trades time for money. The rich trade money for time.' "
+            "'Poor people buy things. Rich people buy assets.' "
+            "'Your financial situation is a reflection of your decisions, not your income.'\n"
+            "Lines 2-4: Expand on the mindset shift — sharp and clear.\n"
+            "Last line: A question that sparks debate in the comments."
         ),
     }
 
