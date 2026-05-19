@@ -40,3 +40,4 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python post.py
