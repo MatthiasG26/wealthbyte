@@ -1,0 +1,30 @@
+name: WealthByte Instagram Posts
+
+on:
+  schedule:
+    - cron: '0 12 * * *'   # 8am ET
+    - cron: '0 15 * * *'   # 11am ET
+    - cron: '0 18 * * *'   # 2pm ET
+    - cron: '0 21 * * *'   # 5pm ET
+    - cron: '0 0 * * *'    # 8pm ET
+  workflow_dispatch:         # allow manual trigger
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic requests
+
+      - name: Run post
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python post.py
