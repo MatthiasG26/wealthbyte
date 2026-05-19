@@ -38,6 +38,34 @@ LUXURY_QUERIES = [
 
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
 
+MUSIC_URLS = [
+    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kai_Engel/Satin/Kai_Engel_-_07_-_Porcelain.mp3",
+    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kai_Engel/Satin/Kai_Engel_-_01_-_Satin.mp3",
+    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kai_Engel/Satin/Kai_Engel_-_05_-_Intermezzo.mp3",
+    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3",
+    "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/WFMU/Broke_For_Free/Directionless_EP/Broke_For_Free_-_01_-_Night_Owl.mp3",
+]
+
+
+def ensure_music() -> str | None:
+    """Return a valid music path, downloading if the cached file is missing or corrupt."""
+    if os.path.exists(MUSIC_PATH) and os.path.getsize(MUSIC_PATH) > 100_000:
+        print(f"Music ready: {os.path.getsize(MUSIC_PATH)//1024}KB")
+        return MUSIC_PATH
+    for url in random.sample(MUSIC_URLS, len(MUSIC_URLS)):
+        try:
+            print(f"Downloading music: {url.split('/')[-1]}")
+            r = requests.get(url, timeout=60)
+            if r.status_code == 200 and len(r.content) > 100_000:
+                with open(MUSIC_PATH, "wb") as f:
+                    f.write(r.content)
+                print(f"Music downloaded: {len(r.content)//1024}KB")
+                return MUSIC_PATH
+        except Exception as e:
+            print(f"Music URL failed ({url.split('/')[-1]}): {e}")
+    print("WARNING: all music downloads failed — reel will be silent")
+    return None
+
 
 def get_font(size: int):
     paths = [
@@ -216,17 +244,19 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
     video = concatenate_videoclips(clips, method="compose")
 
     # Add music
-    if os.path.exists(MUSIC_PATH):
+    music_file = ensure_music()
+    if music_file:
         try:
-            audio = AudioFileClip(MUSIC_PATH)
             from moviepy import concatenate_audioclips
+            audio = AudioFileClip(music_file)
             if audio.duration < video.duration:
                 loops = int(video.duration / audio.duration) + 1
                 audio = concatenate_audioclips([audio] * loops)
-            audio = audio.subclipped(0, video.duration).with_volume_scaled(0.75)
+            audio = audio.subclipped(0, video.duration).with_volume_scaled(1.8)
             video = video.with_audio(audio)
+            print(f"Audio added at 1.8x volume, duration {video.duration:.1f}s")
         except Exception as e:
-            print(f"Audio note: {e}")
+            print(f"Audio error: {e}")
 
     video.write_videofile(
         output_path, fps=FPS, codec="libx264", audio_codec="aac",
