@@ -21,10 +21,22 @@ jobs:
           python-version: '3.11'
 
       - name: Install system dependencies
-        run: sudo apt-get install -y ffmpeg fonts-liberation
+        run: sudo apt-get install -y ffmpeg fonts-liberation fonts-dejavu
 
       - name: Install dependencies
         run: pip install anthropic requests moviepy pillow numpy
+
+      - name: Generate background music
+        run: |
+          ffmpeg -f lavfi \
+            -i "sine=frequency=60:sample_rate=44100,volume=0.4" \
+            -f lavfi \
+            -i "sine=frequency=120:sample_rate=44100,volume=0.15" \
+            -f lavfi \
+            -i "anoisesrc=color=white:amplitude=0.015,lowpass=f=800,volume=0.3" \
+            -filter_complex \
+            "[0][1][2]amix=inputs=3:duration=longest,aecho=0.6:0.7:80:0.25,atrim=duration=35,afade=t=in:d=2,afade=t=out:st=33:d=2" \
+            -ar 44100 -ac 2 music.mp3 -y
 
       - name: Run post
         env:
