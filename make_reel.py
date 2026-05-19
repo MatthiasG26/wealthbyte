@@ -265,7 +265,20 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
 
     video = concatenate_videoclips(clips, method="compose")
 
-    # No background music — trending audio added manually in Instagram app
+    # Add music
+    music_file = ensure_music()
+    if music_file:
+        try:
+            from moviepy import concatenate_audioclips
+            audio = AudioFileClip(music_file)
+            if audio.duration < video.duration:
+                loops = int(video.duration / audio.duration) + 1
+                audio = concatenate_audioclips([audio] * loops)
+            audio = audio.subclipped(0, video.duration).with_volume_scaled(1.8)
+            video = video.with_audio(audio)
+            print(f"Audio added, duration {video.duration:.1f}s")
+        except Exception as e:
+            print(f"Audio error: {e}")
 
     video.write_videofile(
         output_path, fps=FPS, codec="libx264", audio_codec="aac",
