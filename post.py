@@ -9,8 +9,9 @@ import requests
 import random
 import sys
 import os
+import time
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from make_reel import create_reel
 
 INSTAGRAM_USER_ID = os.environ.get("IG_USER_ID", "17841467067743259")
@@ -29,6 +30,9 @@ HASHTAGS = (
     "#moneymanagement #financetips #investingforbeginners #debtfree #financialfreedom "
     "#budgeting #moneymindset #richhabits #buildwealth #financialgoals"
 )
+
+# Module-level cleanup hook set by upload_video when GitHub release is used
+_gh_cleanup_fn = None
 
 
 def generate_content(content_type: str) -> str:
@@ -86,19 +90,128 @@ def generate_content(content_type: str) -> str:
     return f"{caption}\n\n{HASHTAGS}"
 
 
-def upload_video(video_path: str) -> str:
-    """Upload video to catbox.moe for free public hosting."""
-    with open(video_path, "rb") as f:
-        response = requests.post(
-            "https://catbox.moe/user/api.php",
-            data={"reqtype": "fileupload"},
-            files={"fileToUpload": f},
-            timeout=60
+# ── GitHub Release upload (primary — reliable CDN Instagram can access) ────────
+
+def _gh_headers() -> dict:
+    token = os.environ.get("GITHUB_TOKEN", "") or os.environ.get("GH_TOKEN", "")
+    if not token:
+        raise Exception("No GitHub token (GITHUB_TOKEN / GH_TOKEN) available")
+    return {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+
+def _cleanup_old_releases(repo: str, hdrs: dict):
+    """Delete vid-* releases older than 3 hours left over from previous runs."""
+    try:
+        rels = requests.get(
+            f"https://api.github.com/repos/{repo}/releases",
+            headers=hdrs, params={"per_page": 30}, timeout=15
+        ).json()
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=3)
+        for rel in rels:
+            if not rel.get("tag_name", "").startswith("vid-"):
+                continue
+            created = datetime.fromisoformat(rel["created_at"].replace("Z", "+00:00"))
+            if created < cutoff:
+                requests.delete(
+                    f"https://api.github.com/repos/{repo}/releases/{rel['id']}",
+                    headers=hdrs, timeout=15
+                )
+                requests.delete(
+                    f"https://api.github.com/repos/{repo}/git/refs/tags/{rel['tag_name']}",
+                    headers=hdrs, timeout=15
+                )
+    except Exception as e:
+        print(f"Release cleanup note: {e}")
+
+
+def _delete_release(release_id: int, repo: str, hdrs: dict):
+    try:
+        r = requests.get(
+            f"https://api.github.com/repos/{repo}/releases/{release_id}",
+            headers=hdrs, timeout=15
         )
-    url = response.text.strip()
+        tag = r.json().get("tag_name", "")
+        requests.delete(
+            f"https://api.github.com/repos/{repo}/releases/{release_id}",
+            headers=hdrs, timeout=15
+        )
+        if tag:
+            requests.delete(
+                f"https://api.github.com/repos/{repo}/git/refs/tags/{tag}",
+                headers=hdrs, timeout=15
+            )
+        print("Temporary GitHub release deleted.")
+    except Exception as e:
+        print(f"Release delete note: {e}")
+
+
+def _upload_to_github_release(video_path: str) -> str:
+    global _gh_cleanup_fn
+    hdrs = _gh_headers()
+    repo = os.environ.get("GITHUB_REPOSITORY", "MatthiasG26/wealthbyte")
+
+    _cleanup_old_releases(repo, hdrs)
+
+    tag = f"vid-{int(time.time())}"
+    rel = requests.post(
+        f"https://api.github.com/repos/{repo}/releases",
+        headers=hdrs,
+        json={"tag_name": tag, "name": tag, "prerelease": True},
+        timeout=30,
+    ).json()
+    if "id" not in rel:
+        raise Exception(f"Release creation failed: {rel}")
+
+    upload_url = rel["upload_url"].split("{")[0]
+    with open(video_path, "rb") as f:
+        asset = requests.post(
+            f"{upload_url}?name=reel.mp4",
+            headers={**hdrs, "Content-Type": "video/mp4"},
+            data=f,
+            timeout=120,
+        ).json()
+
+    url = asset.get("browser_download_url", "")
+    if not url:
+        raise Exception(f"Asset upload failed: {asset}")
+
+    rel_id = rel["id"]
+    _gh_cleanup_fn = lambda: _delete_release(rel_id, repo, hdrs)
+    return url
+
+
+# ── Fallback: litterbox (1-hour temp hosting) ──────────────────────────────────
+
+def _upload_to_litterbox(video_path: str) -> str:
+    with open(video_path, "rb") as f:
+        r = requests.post(
+            "https://litterbox.catbox.moe/resources/internals/api.php",
+            data={"reqtype": "fileupload", "time": "1h"},
+            files={"fileToUpload": f},
+            timeout=90,
+        )
+    url = r.text.strip()
     if url.startswith("https://"):
         return url
-    raise Exception(f"Upload failed: {response.text}")
+    raise Exception(f"Litterbox returned: {r.text[:200]}")
+
+
+def upload_video(video_path: str) -> str:
+    """Upload video to a host Instagram can download from."""
+    try:
+        url = _upload_to_github_release(video_path)
+        print(f"Video uploaded to GitHub CDN: {url}")
+        return url
+    except Exception as e:
+        print(f"GitHub upload failed ({e}), trying litterbox...")
+
+    url = _upload_to_litterbox(video_path)
+    print(f"Video uploaded to litterbox: {url}")
+    return url
 
 
 def post_reel_to_instagram(caption: str, video_url: str) -> bool:
@@ -123,8 +236,7 @@ def post_reel_to_instagram(caption: str, video_url: str) -> bool:
     print(f"Reel container created: {container_id}")
 
     # Step 2: Wait for processing then publish
-    import time
-    for attempt in range(12):
+    for attempt in range(18):  # up to 3 minutes
         time.sleep(10)
         status_url = f"https://graph.instagram.com/v21.0/{container_id}"
         status = requests.get(status_url, params={
@@ -171,10 +283,13 @@ def main():
     print(f"Reel video created: {video_path}")
 
     video_url = upload_video(video_path)
-    print(f"Video uploaded: {video_url}")
 
     success = post_reel_to_instagram(caption, video_url)
     os.unlink(video_path)
+
+    # Clean up the temporary GitHub release now that Instagram is done with the URL
+    if _gh_cleanup_fn:
+        _gh_cleanup_fn()
 
     if not success:
         sys.exit(1)

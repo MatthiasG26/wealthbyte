@@ -14,16 +14,21 @@ FPS = 30
 PEXELS_KEY = os.environ.get("PEXELS_KEY", "")
 
 LUXURY_QUERIES = [
-    "luxury watch close up",
-    "luxury car driving",
-    "private jet interior",
-    "luxury penthouse city view",
-    "champagne pouring",
-    "mansion interior luxury",
-    "rolex watch",
-    "sports car luxury",
-    "luxury hotel lobby",
-    "money cash luxury",
+    "tropical beach vacation",
+    "clear blue ocean water",
+    "luxury yacht ocean",
+    "maldives resort overwater",
+    "tropical paradise pool",
+    "caribbean beach turquoise water",
+    "luxury resort infinity pool",
+    "tropical sunset beach",
+    "island vacation aerial",
+    "luxury beach club",
+    "bora bora tropical",
+    "hawaii beach waves",
+    "tropical waterfall nature",
+    "beach vacation aerial drone",
+    "ocean waves tropical",
 ]
 
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
@@ -213,13 +218,18 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
             if audio.duration < video.duration:
                 loops = int(video.duration / audio.duration) + 1
                 audio = concatenate_audioclips([audio] * loops)
-            audio = audio.subclipped(0, video.duration).with_volume_scaled(0.22)
+            audio = audio.subclipped(0, video.duration).with_volume_scaled(0.75)
             video = video.with_audio(audio)
         except Exception as e:
             print(f"Audio note: {e}")
 
-    video.write_videofile(output_path, fps=FPS, codec="libx264",
-                          audio_codec="aac", logger=None)
+    video.write_videofile(
+        output_path, fps=FPS, codec="libx264", audio_codec="aac",
+        ffmpeg_params=["-pix_fmt", "yuv420p", "-profile:v", "main",
+                       "-level", "4.0", "-movflags", "+faststart",
+                       "-b:v", "4000k", "-b:a", "128k"],
+        logger=None
+    )
     os.unlink(bg_path)
     return output_path
 

@@ -9,6 +9,9 @@ on:
     - cron: '0 0 * * *'    # 8pm ET
   workflow_dispatch:         # allow manual trigger
 
+permissions:
+  contents: write   # allows GITHUB_TOKEN to create/delete releases
+
 jobs:
   post:
     runs-on: ubuntu-latest
@@ -26,21 +29,14 @@ jobs:
       - name: Install dependencies
         run: pip install anthropic requests moviepy pillow numpy
 
-      - name: Generate background music
+      - name: Download background music
         run: |
-          ffmpeg -f lavfi \
-            -i "sine=frequency=60:sample_rate=44100,volume=0.4" \
-            -f lavfi \
-            -i "sine=frequency=120:sample_rate=44100,volume=0.15" \
-            -f lavfi \
-            -i "anoisesrc=color=white:amplitude=0.015,lowpass=f=800,volume=0.3" \
-            -filter_complex \
-            "[0][1][2]amix=inputs=3:duration=longest,aecho=0.6:0.7:80:0.25,atrim=duration=35,afade=t=in:d=2,afade=t=out:st=33:d=2" \
-            -ar 44100 -ac 2 music.mp3 -y
+          curl -sL "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/WFMU/Broke_For_Free/Directionless_EP/Broke_For_Free_-_01_-_Night_Owl.mp3" \
+            -o music.mp3 --max-time 60
 
       - name: Run post
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
-        run: python post.py
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
