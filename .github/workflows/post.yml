@@ -20,8 +20,11 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install system dependencies
+        run: sudo apt-get install -y ffmpeg fonts-liberation
+
       - name: Install dependencies
-        run: pip install anthropic requests
+        run: pip install anthropic requests moviepy pillow numpy
 
       - name: Run post
         env:
