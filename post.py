@@ -81,13 +81,13 @@ def generate_content(content_type: str) -> dict:
 
 
 def get_image_url(content_type: str) -> str:
-    # Finance-themed Unsplash images (stable, publicly accessible)
+    # Finance-themed images from Pexels (Instagram-compatible public URLs)
     images = {
-        "money_fact": "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1080&q=80",
-        "mistake_to_avoid": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1080&q=80",
-        "quick_tip": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1080&q=80",
-        "how_it_works": "https://images.unsplash.com/photo-1543286386-713bdd548da4?w=1080&q=80",
-        "mindset": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1080&q=80",
+        "money_fact": "https://images.pexels.com/photos/4386431/pexels-photo-4386431.jpeg",
+        "mistake_to_avoid": "https://images.pexels.com/photos/6801648/pexels-photo-6801648.jpeg",
+        "quick_tip": "https://images.pexels.com/photos/4386373/pexels-photo-4386373.jpeg",
+        "how_it_works": "https://images.pexels.com/photos/6802042/pexels-photo-6802042.jpeg",
+        "mindset": "https://images.pexels.com/photos/6802049/pexels-photo-6802049.jpeg",
     }
     return images.get(content_type, images["quick_tip"])
 
