@@ -39,12 +39,27 @@ LUXURY_QUERIES = [
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
 
 MUSIC_URLS = [
-    # Deep cinematic / luxury ambient (Kevin MacLeod — royalty free)
+    # Dark cinematic / luxury ambient / deep (Kevin MacLeod — royalty free)
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Slow%20Burn.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deep%20Haze.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Black%20Vortex.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Floating%20Cities.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ghost%20Story.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Descent.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Oppressive%20Gloom.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ossuary%206%20-%20Air.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hypnothis.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Night%20Cave.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Phantasm.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Echoes%20of%20Time%20v2.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dreamer.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Nowhere%20Land.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Impact%20Prelude.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Undaunted.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Future%20Gladiator.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cold%20Funk.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chill%20Wave.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Darkest%20Child.mp3",
 ]
 
 
