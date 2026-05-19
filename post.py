@@ -38,51 +38,35 @@ _gh_cleanup_fn = None
 def generate_content(content_type: str) -> str:
     client = anthropic.Anthropic()
 
+    style = (
+        "You write scripts for a premium faceless finance Instagram page (@getwealthbyte). "
+        "The vibe is: old money, quiet luxury, cinematic, aspirational. NOT sigma memes or fake guru. "
+        "HOOK RULES: Short. Mysterious. Creates status curiosity. Under 45 chars. No emojis in hook. "
+        "Hook examples: 'Rich people avoid this.' | 'Luxury is usually silent.' | "
+        "'Most people stay broke because of this.' | 'The wealthy think differently.' | "
+        "'This is how money really works.' | 'The rich don't save. They invest.' | "
+        "'Stop trading time for money.' | 'Your salary is keeping you poor.'\n"
+        "BODY RULES: 3 lines max. Short punchy sentences. No filler. No cringe. Premium tone.\n"
+        "END: One short question that sparks comments. Feels natural, not forced.\n"
+        "FORMAT: Only output the lines separated by newlines. No labels, no quotes, no emojis except optionally one on the last line."
+    )
+
     prompts = {
         "money_fact": (
-            "Write a short viral finance video script. Use a shocking, thought-provoking hook.\n"
-            "Line 1 (hook): A bold, surprising financial truth — under 55 chars. "
-            "Examples: 'The middle class buys liabilities and calls them assets.' "
-            "'Saving money won't make you rich. Investing will.' "
-            "'Your job is designed to keep you comfortable enough to never quit.'\n"
-            "Lines 2-4: Back it up with 3 punchy, clear sentences.\n"
-            "Last line: A sharp engaging question that makes people comment."
+            f"{style}\n\nWrite a script revealing a surprising financial truth most people don't know."
         ),
         "mistake_to_avoid": (
-            "Write a short viral finance video script about a money mistake.\n"
-            "Line 1 (hook): Bold statement under 55 chars. "
-            "Examples: 'Most people will retire broke because of this.' "
-            "'Stop paying yourself last. Pay yourself first.' "
-            "'Buying a new car is the fastest way to stay poor.'\n"
-            "Lines 2-4: Explain the mistake and what to do instead — punchy and clear.\n"
-            "Last line: A sharp engaging question."
+            f"{style}\n\nWrite a script about one money mistake that keeps people broke."
         ),
         "quick_tip": (
-            "Write a short viral finance video script with one powerful money tip.\n"
-            "Line 1 (hook): Bold, direct statement under 55 chars. "
-            "Examples: 'One account. Change your financial life.' "
-            "'Automate your savings and forget they exist.' "
-            "'The best investment you can make costs nothing.'\n"
-            "Lines 2-4: Explain why it works — concise and compelling.\n"
-            "Last line: A sharp engaging question."
+            f"{style}\n\nWrite a script sharing one powerful actionable wealth tip."
         ),
         "how_it_works": (
-            "Write a short viral finance video script explaining a financial concept.\n"
-            "Line 1 (hook): A bold hook under 55 chars that makes people stop scrolling. "
-            "Examples: 'Compound interest is how the rich get richer.' "
-            "'Your credit score is costing you thousands.' "
-            "'Index funds beat 90% of professional investors.'\n"
-            "Lines 2-4: Explain in plain, powerful language.\n"
-            "Last line: A sharp engaging question."
+            f"{style}\n\nWrite a script explaining one financial concept (compound interest, index funds, "
+            "credit score, assets vs liabilities, Roth IRA, net worth, etc.) in a premium, simple way."
         ),
         "mindset": (
-            "Write a short viral finance video script about a wealth mindset shift.\n"
-            "Line 1 (hook): A bold, jarring truth under 55 chars. "
-            "Examples: 'The middle class trades time for money. The rich trade money for time.' "
-            "'Poor people buy things. Rich people buy assets.' "
-            "'Your financial situation is a reflection of your decisions, not your income.'\n"
-            "Lines 2-4: Expand on the mindset shift — sharp and clear.\n"
-            "Last line: A question that sparks debate in the comments."
+            f"{style}\n\nWrite a script about a mindset difference between the wealthy and everyone else."
         ),
     }
 

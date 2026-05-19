@@ -14,26 +14,31 @@ FPS = 30
 PEXELS_KEY = os.environ.get("PEXELS_KEY", "")
 
 LUXURY_QUERIES = [
-    "luxury lifestyle cinematic",
-    "luxury car driving",
-    "private jet interior",
+    "Lamborghini driving cinematic",
+    "Rolls Royce luxury car",
+    "Ferrari supercar driving",
+    "Dubai luxury skyscraper aerial",
+    "luxury yacht ocean cinematic",
+    "Rolex watch closeup",
     "penthouse city view night",
-    "luxury yacht sailing ocean",
-    "champagne pour slow motion",
-    "sports car driving cinematic",
-    "rooftop luxury city",
-    "Lamborghini driving",
-    "Monaco luxury cars",
-    "Dubai skyline aerial",
-    "luxury villa infinity pool",
-    "luxury hotel lobby",
-    "luxury watch closeup",
-    "private pool villa sunset",
-    "luxury fashion cinematic",
-    "supercar aerial drone",
-    "luxury resort aerial",
-    "billionaire mansion aerial",
-    "cinematic aerial city night",
+    "private jet interior luxury",
+    "Bentley driving city",
+    "Monaco supercar street",
+    "Dubai marina night aerial",
+    "luxury hotel suite interior",
+    "Porsche 911 driving cinematic",
+    "Aston Martin sports car",
+    "luxury fashion model cinematic",
+    "city skyline night aerial drone",
+    "luxury watch collection",
+    "superyacht aerial ocean",
+    "Bugatti hypercar",
+    "designer fashion luxury",
+    "luxury nightlife rooftop",
+    "McLaren sports car",
+    "Dubai gold luxury",
+    "luxury mansion aerial",
+    "Maserati driving night",
 ]
 
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
@@ -133,10 +138,11 @@ def make_overlay_frame(bg_frame: np.ndarray, words: list, revealed: int,
     overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Dark gradient overlay so text pops
+    # Cinematic dark overlay — heavier at edges, lighter in center so visuals show through
     for i in range(HEIGHT):
-        alpha = int(160 + 60 * (abs(i - HEIGHT // 2) / (HEIGHT // 2)))
-        draw.line([(0, i), (WIDTH, i)], fill=(0, 0, 0, min(alpha, 210)))
+        t = abs(i - HEIGHT // 2) / (HEIGHT // 2)
+        alpha = int(180 + 70 * t)
+        draw.line([(0, i), (WIDTH, i)], fill=(0, 0, 0, min(alpha, 230)))
 
     img = img.convert("RGBA")
     img = Image.alpha_composite(img, overlay).convert("RGB")
@@ -146,14 +152,14 @@ def make_overlay_frame(bg_frame: np.ndarray, words: list, revealed: int,
     small = get_font(46)
     tiny = get_font(38)
 
-    # Handle top left
-    draw2.text((60, 80), "@getwealthbyte", font=tiny, fill=(255, 200, 0))
+    # Subtle watermark top left
+    draw2.text((60, 80), "@getwealthbyte", font=tiny, fill=(200, 200, 200))
 
-    # Group words into lines of ~4
+    # Group words into lines of ~3 — minimal, clean, readable
     lines, cur = [], []
     for w in words:
         cur.append(w)
-        if len(cur) >= 4:
+        if len(cur) >= 3:
             lines.append(cur); cur = []
     if cur:
         lines.append(cur)
@@ -194,11 +200,11 @@ def make_overlay_frame(bg_frame: np.ndarray, words: list, revealed: int,
         sw = bbox[2] - bbox[0]
         draw2.text(((WIDTH - sw) // 2, HEIGHT - 240), subtitle, font=small, fill=(255, 200, 0))
 
-    # Bottom CTA
-    cta = "Follow @getwealthbyte · Daily money tips"
+    # Bottom — minimal elegant CTA
+    cta = "Follow for daily wealth insights"
     bbox = draw2.textbbox((0, 0), cta, font=tiny)
     cw = bbox[2] - bbox[0]
-    draw2.text(((WIDTH - cw) // 2, HEIGHT - 160), cta, font=tiny, fill=(200, 200, 200))
+    draw2.text(((WIDTH - cw) // 2, HEIGHT - 160), cta, font=tiny, fill=(180, 180, 180))
 
     return np.array(img)
 
@@ -253,9 +259,9 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
                                        font_size=80))
 
     # CTA
-    cta_words = ["Follow", "for", "daily", "money", "tips", "that", "actually", "work."]
-    clips.append(make_segment(cta_words, 2.5,
-                               subtitle="🔔 Turn on notifications", font_size=84))
+    cta_words = ["Follow", "@getwealthbyte", "for", "more."]
+    clips.append(make_segment(cta_words, 2.0,
+                               subtitle="Turn on notifications", font_size=84))
 
     video = concatenate_videoclips(clips, method="compose")
 
