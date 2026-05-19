@@ -179,16 +179,6 @@ def _upload_to_github_release(video_path: str) -> str:
     if not url:
         raise Exception(f"Asset upload failed: {asset}")
 
-    # Follow GitHub's redirect so Instagram gets the direct objects.githubusercontent.com URL
-    # (Instagram's servers may not follow the github.com redirect)
-    try:
-        r_head = requests.head(url, allow_redirects=True, timeout=15)
-        if r_head.url and r_head.url != url:
-            url = r_head.url
-            print(f"Resolved CDN URL: {url[:80]}...")
-    except Exception:
-        pass  # fall back to browser_download_url
-
     rel_id = rel["id"]
     _gh_cleanup_fn = lambda: _delete_release(rel_id, repo, hdrs)
     return url
