@@ -14,31 +14,48 @@ FPS = 30
 PEXELS_KEY = os.environ.get("PEXELS_KEY", "")
 
 LUXURY_QUERIES = [
-    "Lamborghini driving",
-    "Ferrari supercar driving",
-    "Rolls Royce driving",
-    "Bugatti Chiron",
-    "McLaren supercar",
-    "Porsche 911 driving",
-    "Bentley driving",
-    "Aston Martin driving",
-    "Lamborghini interior",
-    "Ferrari interior closeup",
-    "supercar exhaust",
-    "exotic car driving",
-    "luxury supercar collection",
-    "Rolex watch closeup",
-    "luxury watch movement",
-    "watch collection luxury",
-    "Patek Philippe watch",
+    # Cars — specific models and shots
+    "Rolls Royce Cullinan",
+    "Rolls Royce Phantom driving",
+    "Lamborghini Aventador",
+    "Ferrari SF90",
+    "Mercedes Maybach S Class",
+    "Bentley Continental GT driving",
+    "Porsche 911 Turbo driving",
+    "Rolls Royce door opening",
+    "Lamborghini steering wheel interior",
+    "Ferrari interior luxury detail",
+    "luxury car valet",
+    "supercar rolling shot",
+    # Watches — brands and shots
+    "Rolex watch wrist closeup",
+    "Patek Philippe watch luxury",
     "Audemars Piguet watch",
-    "luxury watch hands",
-    "supercar wheel spinning",
-    "Lamborghini Urus",
-    "Ferrari Roma driving",
-    "Porsche interior luxury",
-    "supercar acceleration",
-    "luxury car detail closeup",
+    "Cartier watch luxury",
+    "luxury watch sunlight reflection",
+    "watch steering wheel shot",
+    "adjusting cufflinks watch",
+    # Places — cities and venues
+    "Dubai luxury hotel rooftop",
+    "Monaco yacht marina",
+    "Paris luxury hotel",
+    "Milan fashion luxury",
+    "London luxury lifestyle",
+    "luxury rooftop pool",
+    "designer store luxury shopping",
+    "oceanfront villa luxury",
+    "luxury beach club",
+    # Lifestyle — high performing clips
+    "private jet interior",
+    "yacht lunch ocean",
+    "luxury hotel breakfast",
+    "tailored suit luxury",
+    "luxury shopping bags",
+    "champagne pour luxury",
+    "cigar lounge luxury",
+    "penthouse interior luxury",
+    "first class flight",
+    "ocean drive luxury car",
 ]
 
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
@@ -240,7 +257,7 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
     from moviepy import concatenate_videoclips as cv
     bg_paths = download_luxury_clips(total_duration)
     raw_clips = [VideoFileClip(p).resized((WIDTH, HEIGHT)) for p in bg_paths]
-    bg_clip = cv(raw_clips) if len(raw_clips) > 1 else raw_clips[0]
+    bg_clip = cv(raw_clips, method="chain") if len(raw_clips) > 1 else raw_clips[0]
     bg_clip = bg_clip.subclipped(0, min(bg_clip.duration, total_duration + 2))
 
     clips = []
