@@ -107,11 +107,12 @@ def get_font(size: int):
 
 
 def _fetch_one_video(query: str, used_ids: set) -> str | None:
-    """Download one portrait HD video from Pexels for the given query."""
+    """Download one HD video from Pexels — any orientation, we'll crop landscape to portrait."""
     headers = {"Authorization": PEXELS_KEY}
+    # Search without orientation filter so we get landscape car/watch content too
     resp = requests.get(
         "https://api.pexels.com/videos/search",
-        params={"query": query, "per_page": 15, "orientation": "portrait"},
+        params={"query": query, "per_page": 20},
         headers=headers, timeout=15,
     )
     videos = resp.json().get("videos", [])
@@ -119,15 +120,23 @@ def _fetch_one_video(query: str, used_ids: set) -> str | None:
     for v in videos:
         if v["id"] in used_ids:
             continue
+        # Prefer HD, pick the best file available
+        best = None
         for f in v.get("video_files", []):
             w, h = f.get("width", 0), f.get("height", 0)
-            if h > w and f.get("quality") in ("hd", "sd") and h >= 720:
-                tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-                tmp.write(requests.get(f["link"], timeout=60).content)
-                tmp.close()
-                used_ids.add(v["id"])
-                print(f"Clip: '{query}' — {v['id']}")
-                return tmp.name
+            q = f.get("quality", "")
+            if q in ("hd", "sd") and max(w, h) >= 720:
+                if best is None or max(w, h) > max(best.get("width", 0), best.get("height", 0)):
+                    best = f
+        if best:
+            tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+            tmp.write(requests.get(best["link"], timeout=60).content)
+            tmp.close()
+            used_ids.add(v["id"])
+            w, h = best.get("width", 0), best.get("height", 0)
+            orientation = "portrait" if h > w else "landscape"
+            print(f"Clip ({orientation}): '{query}' — {v['id']} ({w}x{h})")
+            return tmp.name
     return None
 
 
@@ -241,7 +250,16 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
     # Download multiple unique luxury clips — no looping the same footage
     from moviepy import concatenate_videoclips as cv
     bg_paths = download_luxury_clips(total_duration)
-    raw_clips = [VideoFileClip(p).resized((WIDTH, HEIGHT)) for p in bg_paths]
+    def to_portrait(path):
+        clip = VideoFileClip(path)
+        if clip.w > clip.h:
+            # Landscape — center-crop to 9:16 so subject stays centered
+            target_w = int(clip.h * 9 / 16)
+            x1 = (clip.w - target_w) // 2
+            clip = clip.cropped(x1=x1, x2=x1 + target_w)
+        return clip.resized((WIDTH, HEIGHT))
+
+    raw_clips = [to_portrait(p) for p in bg_paths]
     bg_clip = cv(raw_clips, method="chain") if len(raw_clips) > 1 else raw_clips[0]
     bg_clip = bg_clip.subclipped(0, min(bg_clip.duration, total_duration + 2))
 
