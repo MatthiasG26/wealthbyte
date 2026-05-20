@@ -15,30 +15,30 @@ PEXELS_KEY = os.environ.get("PEXELS_KEY", "")
 
 LUXURY_QUERIES = [
     "Lamborghini driving cinematic",
-    "Rolls Royce luxury car",
-    "Ferrari supercar driving",
-    "Dubai luxury skyscraper aerial",
-    "luxury yacht ocean cinematic",
-    "Rolex watch closeup",
-    "penthouse city view night",
-    "private jet interior luxury",
-    "Bentley driving city",
+    "Rolls Royce luxury car driving",
+    "Ferrari red supercar driving",
+    "Rolex watch closeup luxury",
+    "Bentley driving city night",
     "Monaco supercar street",
-    "Dubai marina night aerial",
-    "luxury hotel suite interior",
     "Porsche 911 driving cinematic",
     "Aston Martin sports car",
-    "luxury fashion model cinematic",
-    "city skyline night aerial drone",
-    "luxury watch collection",
-    "superyacht aerial ocean",
-    "Bugatti hypercar",
-    "designer fashion luxury",
-    "luxury nightlife rooftop",
-    "McLaren sports car",
-    "Dubai gold luxury",
-    "luxury mansion aerial",
+    "Bugatti hypercar driving",
+    "McLaren supercar",
     "Maserati driving night",
+    "luxury sports car interior",
+    "supercar exhaust cinematic",
+    "exotic car driving cinematic",
+    "luxury car collection",
+    "penthouse city view night",
+    "Dubai skyscraper aerial night",
+    "luxury watch Rolex closeup",
+    "luxury fashion model editorial",
+    "luxury hotel lobby cinematic",
+    "private jet interior luxury",
+    "luxury mansion interior",
+    "city skyline night aerial",
+    "luxury lifestyle cinematic",
+    "sports car night city driving",
 ]
 
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
@@ -104,31 +104,48 @@ def get_font(size: int):
     return ImageFont.load_default()
 
 
-def download_luxury_video() -> str:
-    """Fetch a random luxury portrait video from Pexels."""
-    query = random.choice(LUXURY_QUERIES)
-    url = "https://api.pexels.com/videos/search"
-    params = {"query": query, "per_page": 15, "orientation": "portrait"}
+def _fetch_one_video(query: str, used_ids: set) -> str | None:
+    """Download one portrait HD video from Pexels for the given query."""
     headers = {"Authorization": PEXELS_KEY}
-
-    resp = requests.get(url, params=params, headers=headers, timeout=15)
-    data = resp.json()
-    videos = data.get("videos", [])
-
-    # Pick a random video that has a portrait HD file
+    resp = requests.get(
+        "https://api.pexels.com/videos/search",
+        params={"query": query, "per_page": 15, "orientation": "portrait"},
+        headers=headers, timeout=15,
+    )
+    videos = resp.json().get("videos", [])
     random.shuffle(videos)
     for v in videos:
+        if v["id"] in used_ids:
+            continue
         for f in v.get("video_files", []):
             w, h = f.get("width", 0), f.get("height", 0)
             if h > w and f.get("quality") in ("hd", "sd") and h >= 720:
                 tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-                video_data = requests.get(f["link"], timeout=60).content
-                tmp.write(video_data)
+                tmp.write(requests.get(f["link"], timeout=60).content)
                 tmp.close()
-                print(f"Background: '{query}' — {v['id']}")
+                used_ids.add(v["id"])
+                print(f"Clip: '{query}' — {v['id']}")
                 return tmp.name
+    return None
 
-    raise Exception(f"No portrait video found for query: {query}")
+
+def download_luxury_clips(needed_secs: float) -> list[str]:
+    """Download multiple unique luxury clips until we have enough duration — no looping."""
+    paths, used_ids = [], set()
+    queries = random.sample(LUXURY_QUERIES, len(LUXURY_QUERIES))
+    total = 0.0
+    for query in queries:
+        if total >= needed_secs:
+            break
+        path = _fetch_one_video(query, used_ids)
+        if path:
+            dur = VideoFileClip(path).duration
+            paths.append(path)
+            total += dur
+            print(f"  → {dur:.1f}s collected ({total:.1f}/{needed_secs:.1f}s)")
+    if not paths:
+        raise Exception("No portrait videos found from Pexels")
+    return paths
 
 
 def make_overlay_frame(bg_frame: np.ndarray, words: list, revealed: int,
@@ -215,20 +232,16 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
     hook = lines[0] if lines else "💰 Money tip"
     body_lines = [l for l in lines[1:5] if l]
 
-    # Download luxury background
-    bg_path = download_luxury_video()
-    bg_clip = VideoFileClip(bg_path)
-
-    # Make bg loop if shorter than needed
     secs_per_word = 0.17
-    all_words = hook.split() + [w for l in body_lines for w in l.split()] + ["Follow", "for", "daily", "money", "tips"]
+    all_words = hook.split() + [w for l in body_lines for w in l.split()] + ["Follow", "for", "more."]
     total_duration = max(15, len(all_words) * secs_per_word + 5)
 
-    if bg_clip.duration < total_duration:
-        loops = int(total_duration / bg_clip.duration) + 1
-        from moviepy import concatenate_videoclips as cv
-        bg_clip = cv([bg_clip] * loops)
-    bg_clip = bg_clip.subclipped(0, total_duration).resized((WIDTH, HEIGHT))
+    # Download multiple unique luxury clips — no looping the same footage
+    from moviepy import concatenate_videoclips as cv
+    bg_paths = download_luxury_clips(total_duration)
+    raw_clips = [VideoFileClip(p).resized((WIDTH, HEIGHT)) for p in bg_paths]
+    bg_clip = cv(raw_clips) if len(raw_clips) > 1 else raw_clips[0]
+    bg_clip = bg_clip.subclipped(0, min(bg_clip.duration, total_duration + 2))
 
     clips = []
     current_t = [0.0]
@@ -291,7 +304,11 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
                        "-b:v", "4000k", "-b:a", "128k"],
         logger=None
     )
-    os.unlink(bg_path)
+    for p in bg_paths:
+        try:
+            os.unlink(p)
+        except Exception:
+            pass
     return output_path
 
 
