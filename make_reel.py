@@ -86,10 +86,7 @@ MUSIC_URLS = [
 
 
 def ensure_music() -> str | None:
-    """Return a valid music path, downloading if the cached file is missing or corrupt."""
-    if os.path.exists(MUSIC_PATH) and os.path.getsize(MUSIC_PATH) > 100_000:
-        print(f"Music ready: {os.path.getsize(MUSIC_PATH)//1024}KB")
-        return MUSIC_PATH
+    """Download a fresh random track every run — no caching so music varies every post."""
     for url in random.sample(MUSIC_URLS, len(MUSIC_URLS)):
         try:
             print(f"Downloading music: {url.split('/')[-1]}")
