@@ -155,11 +155,11 @@ def make_overlay_frame(bg_frame: np.ndarray, words: list, revealed: int,
     overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Cinematic dark overlay — heavier at edges, lighter in center so visuals show through
+    # Light overlay — let the bright luxury visuals show through
     for i in range(HEIGHT):
         t = abs(i - HEIGHT // 2) / (HEIGHT // 2)
-        alpha = int(180 + 70 * t)
-        draw.line([(0, i), (WIDTH, i)], fill=(0, 0, 0, min(alpha, 230)))
+        alpha = int(90 + 60 * t)
+        draw.line([(0, i), (WIDTH, i)], fill=(0, 0, 0, min(alpha, 140)))
 
     img = img.convert("RGBA")
     img = Image.alpha_composite(img, overlay).convert("RGB")
@@ -232,7 +232,7 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
     hook = lines[0] if lines else "💰 Money tip"
     body_lines = [l for l in lines[1:5] if l]
 
-    secs_per_word = 0.17
+    secs_per_word = 0.13
     all_words = hook.split() + [w for l in body_lines for w in l.split()] + ["Follow", "for", "more."]
     total_duration = max(15, len(all_words) * secs_per_word + 5)
 
@@ -265,7 +265,7 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
     hook_words = hook.split()
     clips.append(make_segment(hook_words,
                                max(2.5, len(hook_words) * secs_per_word + 1.2),
-                               font_size=96, instant=True))
+                               font_size=74, instant=True))
 
     # Body
     for line in body_lines:
@@ -273,12 +273,12 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
         if bwords:
             clips.append(make_segment(bwords,
                                        max(2.0, len(bwords) * secs_per_word + 0.6),
-                                       font_size=80))
+                                       font_size=64))
 
     # CTA
     cta_words = ["Follow", "@getwealthbyte", "for", "more."]
     clips.append(make_segment(cta_words, 2.0,
-                               subtitle="Turn on notifications", font_size=84))
+                               subtitle="Turn on notifications", font_size=64))
 
     video = concatenate_videoclips(clips, method="compose")
 
