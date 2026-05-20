@@ -233,10 +233,14 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
     clips = []
     current_t = [0.0]
 
-    def make_segment(words, duration, subtitle="", font_size=88):
+    def make_segment(words, duration, subtitle="", font_size=88, instant=False):
         n = len(words)
         def frame_fn(t):
-            revealed = min(n, int(t / secs_per_word))
+            if instant:
+                # Show all words immediately — used for hook so it hits in frame 1
+                revealed = n
+            else:
+                revealed = min(n, int(t / secs_per_word))
             bg_t = min(current_t[0] + t, bg_clip.duration - 0.1)
             bg_frame = bg_clip.get_frame(bg_t)
             return make_overlay_frame(bg_frame, words, revealed, font_size, subtitle)
@@ -244,11 +248,11 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
         current_t[0] += duration
         return clip
 
-    # Hook
+    # Hook — full text visible instantly so the first frame grabs attention
     hook_words = hook.split()
     clips.append(make_segment(hook_words,
-                               max(2.5, len(hook_words) * secs_per_word + 0.8),
-                               font_size=92))
+                               max(2.5, len(hook_words) * secs_per_word + 1.2),
+                               font_size=96, instant=True))
 
     # Body
     for line in body_lines:

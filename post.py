@@ -38,35 +38,56 @@ _gh_cleanup_fn = None
 def generate_content(content_type: str) -> str:
     client = anthropic.Anthropic()
 
-    style = (
-        "You write scripts for a premium faceless finance Instagram page (@getwealthbyte). "
-        "The vibe is: old money, quiet luxury, cinematic, aspirational. NOT sigma memes or fake guru. "
-        "HOOK RULES: Short. Mysterious. Creates status curiosity. Under 45 chars. No emojis in hook. "
-        "Hook examples: 'Rich people avoid this.' | 'Luxury is usually silent.' | "
-        "'Most people stay broke because of this.' | 'The wealthy think differently.' | "
-        "'This is how money really works.' | 'The rich don't save. They invest.' | "
-        "'Stop trading time for money.' | 'Your salary is keeping you poor.'\n"
-        "BODY RULES: 3 lines max. Short punchy sentences. No filler. No cringe. Premium tone.\n"
-        "END: One short question that sparks comments. Feels natural, not forced.\n"
-        "FORMAT: Only output the lines separated by newlines. No labels, no quotes, no emojis except optionally one on the last line."
-    )
+    style = """You write scripts for a premium faceless finance Instagram page (@getwealthbyte).
+Vibe: old money, quiet luxury, cinematic. NOT sigma memes, fake guru, or grindset content.
+
+THE HOOK IS EVERYTHING. It must:
+- Stop someone mid-scroll in under 1 second
+- Say something TRUE that people have never heard phrased this way
+- Create a pattern interrupt — contradict a common belief or say the uncomfortable truth
+- Be under 42 characters. No emoji. No question mark. Statement only.
+- Make the viewer feel slightly called out OR suddenly curious
+
+BEST PERFORMING HOOK FORMULAS:
+• Uncomfortable truth: "Your job is designed to keep you dependent."
+• Contradiction: "Saving money is making you poorer."
+• Status flip: "The wealthy never talk about money."
+• Simple fact that hits hard: "Time, not money, is the real currency."
+• Reframe: "A Rolex isn't a flex. It's a lesson."
+• Unexpected insider truth: "Banks profit when you don't invest."
+• Identity challenge: "You're not broke. You're uninformed."
+• Counterintuitive: "The less you show, the richer you look."
+• Pattern interrupt: "Rich people hate cash."
+• Quiet luxury truth: "Noise is cheap. Silence is expensive."
+
+BODY (lines 2–4): Expand the hook with 3 SHORT punchy sentences.
+Each line = one clear idea. No filler. No corporate speak. Premium, direct, true.
+
+LAST LINE: A short question that makes people stop and comment. Genuine, not forced.
+
+FORMAT: Output only the lines separated by newlines. No labels. No quotes. No intro text."""
 
     prompts = {
         "money_fact": (
-            f"{style}\n\nWrite a script revealing a surprising financial truth most people don't know."
+            f"{style}\n\nWrite a script that reveals a financial truth most people were never taught. "
+            "Something that feels like insider knowledge. The hook should feel like a secret."
         ),
         "mistake_to_avoid": (
-            f"{style}\n\nWrite a script about one money mistake that keeps people broke."
+            f"{style}\n\nWrite a script about one money behavior that silently keeps people broke. "
+            "The hook should make someone feel slightly called out."
         ),
         "quick_tip": (
-            f"{style}\n\nWrite a script sharing one powerful actionable wealth tip."
+            f"{style}\n\nWrite a script with one wealth move that sounds counterintuitive but works. "
+            "The hook should contradict conventional advice."
         ),
         "how_it_works": (
-            f"{style}\n\nWrite a script explaining one financial concept (compound interest, index funds, "
-            "credit score, assets vs liabilities, Roth IRA, net worth, etc.) in a premium, simple way."
+            f"{style}\n\nWrite a script that explains one concept — compound interest, assets vs liabilities, "
+            "index funds, net worth, credit, Roth IRA — in a way that makes the viewer feel like "
+            "they just learned something the wealthy already know. Hook should feel like an unlock."
         ),
         "mindset": (
-            f"{style}\n\nWrite a script about a mindset difference between the wealthy and everyone else."
+            f"{style}\n\nWrite a script about one quiet difference in how wealthy people think vs everyone else. "
+            "Not hustle culture. Old money mentality. The hook should be a truth that stings slightly."
         ),
     }
 
