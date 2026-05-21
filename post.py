@@ -35,6 +35,63 @@ HASHTAGS = (
 _gh_cleanup_fn = None
 
 
+def generate_captions(content_type: str) -> list[str]:
+    """Generate 9-10 clip captions that together deliver one sharp wealth tip like a cinematic edit."""
+    client = anthropic.Anthropic()
+
+    topic_hints = {
+        "money_fact": "a financial truth most people were never taught — something that feels like insider knowledge",
+        "mistake_to_avoid": "one money habit that silently keeps people broke — something that makes the viewer feel called out",
+        "quick_tip": "one counterintuitive wealth move — contradicts what most people believe",
+        "how_it_works": "how one money concept works (compound interest, assets vs liabilities, index funds, net worth) — makes the viewer feel they just got an unlock",
+        "mindset": "one quiet difference in how wealthy people think — old money mentality, not hustle culture",
+    }
+
+    prompt = f"""You create clip-by-clip caption sequences for luxury wealth Instagram Reels (@getwealthbyte).
+Vibe: old money, cinematic, sharp. Like a luxury brand film cut to music.
+
+Topic: {topic_hints.get(content_type, 'luxury wealth mindset')}
+
+Write a sequence of exactly 10 short captions. Together they must:
+1. Open with a hook that stops a scroll cold (3-6 words, bold statement or truth)
+2. Build the idea across clips 2-8 (each 1-4 words, each one adds to the message)
+3. Land with a closer that lingers (2-5 words, final punch)
+
+Rules:
+- Each caption is 1-6 words MAX — no exceptions
+- Read in order, they tell the FULL wealth tip like a sentence spoken across cuts
+- No emoji. No hashtags. No question marks at the end. Statements only.
+- Vocabulary: precise, elevated, not basic. Think Rolex ad copy, not Reddit.
+- Do NOT use: "grind", "hustle", "boss", "sigma", "bro", "literally"
+
+EXAMPLE OUTPUT (topic: saving money doesn't build wealth):
+Saving money is a trap.
+The wealthy don't save.
+They deploy.
+Every dollar is a soldier.
+Sent to fight for more.
+Savings sit idle.
+Investments compound.
+Learn the difference.
+Before it's too late.
+Start today.
+
+OUTPUT FORMAT: One caption per line. No numbers. No quotes. No labels. Nothing else."""
+
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=250,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    lines = [l.strip() for l in message.content[0].text.strip().split("\n") if l.strip()]
+    lines = lines[:12]
+    while len(lines) < 8:
+        lines.append("Build in silence.")
+    print(f"Captions ({len(lines)}): {lines}")
+    return lines
+
+
 def generate_content(content_type: str) -> str:
     client = anthropic.Anthropic()
 
@@ -293,18 +350,19 @@ def main():
     content_type = sys.argv[1] if len(sys.argv) > 1 else random.choice(CONTENT_TYPES)
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')} ET] Generating '{content_type}' reel...")
 
-    caption = generate_content(content_type)
-    print(f"Caption: {caption[:80]}...")
+    captions = generate_captions(content_type)
+    ig_caption = generate_content(content_type)
+    print(f"IG caption: {ig_caption[:80]}...")
 
     with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
         video_path = tmp.name
 
-    create_reel(caption, video_path)
+    create_reel(captions, video_path)
     print(f"Reel video created: {video_path}")
 
     video_url = upload_video(video_path)
 
-    success = post_reel_to_instagram(caption, video_url)
+    success = post_reel_to_instagram(ig_caption, video_url)
     os.unlink(video_path)
 
     # Clean up the temporary GitHub release now that Instagram is done with the URL

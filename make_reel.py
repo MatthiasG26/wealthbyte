@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 """
-WealthByte Reel Generator v3
-Luxury background video + word-by-word text overlay + elegant music
+WealthByte Reel Generator v4
+Fast luxury montage: 8-12 clips × 0.7-1.5s, short captions, chill house music
 """
 
 import os, random, tempfile, requests
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-from moviepy import VideoFileClip, VideoClip, ImageClip, concatenate_videoclips, AudioFileClip, CompositeVideoClip
+from moviepy import VideoFileClip, VideoClip, concatenate_videoclips, AudioFileClip, concatenate_audioclips
 
 WIDTH, HEIGHT = 1080, 1920
 FPS = 30
 PEXELS_KEY = os.environ.get("PEXELS_KEY", "")
 
 LUXURY_QUERIES = [
-    # Supercars — generic terms Pexels actually has
     "supercar driving",
     "sports car driving",
     "exotic car",
@@ -25,28 +24,25 @@ LUXURY_QUERIES = [
     "supercar wheel",
     "red sports car",
     "black luxury car",
-    # Watches
     "luxury watch closeup",
     "luxury watch wrist",
     "watch detail luxury",
     "expensive watch",
-    # Lifestyle
     "private jet interior",
     "champagne pouring",
     "luxury yacht deck",
     "penthouse view",
     "luxury hotel suite",
-    "luxury shopping",
     "rooftop pool luxury",
     "tailored suit",
-    "cigar luxury",
     "luxury lifestyle",
+    "luxury shopping",
+    "cigar luxury",
 ]
 
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
 
 MUSIC_URLS = [
-    # Chill house / smooth electronic (Kevin MacLeod, royalty free)
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Electro%20Cabello.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cool%20Vibes.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Groove%20Grove.mp3",
@@ -61,7 +57,6 @@ MUSIC_URLS = [
 
 
 def ensure_music() -> str | None:
-    """Download a fresh random track every run — no caching so music varies every post."""
     for url in random.sample(MUSIC_URLS, len(MUSIC_URLS)):
         try:
             print(f"Downloading music: {url.split('/')[-1]}")
@@ -94,9 +89,7 @@ def get_font(size: int):
 
 
 def _fetch_one_video(query: str, used_ids: set) -> str | None:
-    """Download one HD video from Pexels — any orientation, we'll crop landscape to portrait."""
     headers = {"Authorization": PEXELS_KEY}
-    # Search without orientation filter so we get landscape car/watch content too
     resp = requests.get(
         "https://api.pexels.com/videos/search",
         params={"query": query, "per_page": 20},
@@ -107,7 +100,6 @@ def _fetch_one_video(query: str, used_ids: set) -> str | None:
     for v in videos:
         if v["id"] in used_ids:
             continue
-        # Prefer HD, pick the best file available
         best = None
         for f in v.get("video_files", []):
             w, h = f.get("width", 0), f.get("height", 0)
@@ -121,186 +113,174 @@ def _fetch_one_video(query: str, used_ids: set) -> str | None:
             tmp.close()
             used_ids.add(v["id"])
             w, h = best.get("width", 0), best.get("height", 0)
-            orientation = "portrait" if h > w else "landscape"
-            print(f"Clip ({orientation}): '{query}' — {v['id']} ({w}x{h})")
+            print(f"Clip: '{query}' — {v['id']} ({w}x{h})")
             return tmp.name
     return None
 
 
-def download_luxury_clips(needed_secs: float) -> list[str]:
-    """Download multiple unique luxury clips until we have enough duration — no looping."""
-    paths, used_ids = [], set()
-    queries = random.sample(LUXURY_QUERIES, len(LUXURY_QUERIES))
-    total = 0.0
-    for query in queries:
-        if total >= needed_secs:
-            break
-        path = _fetch_one_video(query, used_ids)
-        if path:
-            dur = VideoFileClip(path).duration
-            paths.append(path)
-            total += dur
-            print(f"  → {dur:.1f}s collected ({total:.1f}/{needed_secs:.1f}s)")
-    if not paths:
-        raise Exception("No portrait videos found from Pexels")
-    return paths
+def to_portrait(path: str) -> VideoFileClip:
+    clip = VideoFileClip(path)
+    if clip.w > clip.h:
+        target_w = int(clip.h * 9 / 16)
+        x1 = (clip.w - target_w) // 2
+        clip = clip.cropped(x1=x1, x2=x1 + target_w)
+    return clip.resized((WIDTH, HEIGHT))
 
 
-def make_overlay_frame(bg_frame: np.ndarray, words: list, revealed: int,
-                        font_size: int = 88, subtitle: str = "") -> np.ndarray:
-    """Composite text overlay onto a background frame."""
+def _warm_grade(img: Image.Image) -> Image.Image:
+    """Subtle warm cinematic color grade — slightly richer darks, warm shadows."""
+    arr = np.array(img, dtype=np.float32)
+    # Lift shadows slightly, push warm tone
+    arr[..., 0] = np.clip(arr[..., 0] * 1.06 + 8, 0, 255)   # red up
+    arr[..., 1] = np.clip(arr[..., 1] * 1.01 + 2, 0, 255)   # green slight
+    arr[..., 2] = np.clip(arr[..., 2] * 0.92, 0, 255)        # blue down
+    return Image.fromarray(arr.astype(np.uint8))
+
+
+def make_caption_frame(bg_frame: np.ndarray, caption: str, is_hook: bool = False) -> np.ndarray:
     img = Image.fromarray(bg_frame).resize((WIDTH, HEIGHT))
+    img = _warm_grade(img)
+
     overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Light overlay — let the bright luxury visuals show through
+    # Vignette — dark edges, lighter center
     for i in range(HEIGHT):
-        t = abs(i - HEIGHT // 2) / (HEIGHT // 2)
-        alpha = int(90 + 60 * t)
-        draw.line([(0, i), (WIDTH, i)], fill=(0, 0, 0, min(alpha, 140)))
+        t = abs(i / HEIGHT - 0.5) * 2  # 0 at center, 1 at edges
+        alpha = int(30 + 140 * (t ** 1.6))
+        draw.line([(0, i), (WIDTH, i)], fill=(0, 0, 0, min(alpha, 180)))
 
     img = img.convert("RGBA")
     img = Image.alpha_composite(img, overlay).convert("RGB")
     draw2 = ImageDraw.Draw(img)
 
+    # Watermark — top left, subtle
+    tiny = get_font(34)
+    draw2.text((52, 72), "@getwealthbyte", font=tiny, fill=(210, 210, 210))
+
+    # Font size: hook clip gets bigger text to land the statement
+    font_size = 108 if is_hook else 88
     font = get_font(font_size)
-    small = get_font(46)
-    tiny = get_font(38)
 
-    # Subtle watermark top left
-    draw2.text((60, 80), "@getwealthbyte", font=tiny, fill=(200, 200, 200))
-
-    # Group words into lines of ~3 — minimal, clean, readable
+    # Word wrap
+    words = caption.split()
     lines, cur = [], []
     for w in words:
         cur.append(w)
-        if len(cur) >= 3:
-            lines.append(cur); cur = []
-    if cur:
-        lines.append(cur)
-
-    line_h = font_size + 30
-    total_h = len(lines) * line_h
-    y0 = (HEIGHT - total_h) // 2 - 60
-    word_idx = 0
-
-    for li, line_words in enumerate(lines):
-        line_str = " ".join(line_words)
-        bbox = draw2.textbbox((0, 0), line_str, font=font)
-        line_w = bbox[2] - bbox[0]
-        x = (WIDTH - line_w) // 2
-        y = y0 + li * line_h
-        cursor_x = x
-
-        for word in line_words:
-            w_bbox = draw2.textbbox((0, 0), word + " ", font=font)
-            w_w = w_bbox[2] - w_bbox[0]
-
-            if word_idx < revealed:
-                color = (255, 255, 255)
-            elif word_idx == revealed:
-                color = (255, 200, 0)  # gold highlight on current word
+        test = " ".join(cur)
+        bbox = draw2.textbbox((0, 0), test, font=font)
+        if bbox[2] - bbox[0] > WIDTH - 100:
+            if len(cur) > 1:
+                lines.append(" ".join(cur[:-1]))
+                cur = [w]
             else:
-                color = (130, 130, 130)
+                lines.append(test)
+                cur = []
+    if cur:
+        lines.append(" ".join(cur))
 
-            # Shadow for readability
-            draw2.text((cursor_x + 3, y + 3), word, font=font, fill=(0, 0, 0, 180))
-            draw2.text((cursor_x, y), word, font=font, fill=color)
-            cursor_x += w_w
-            word_idx += 1
+    line_h = font_size + 22
+    total_h = len(lines) * line_h
+    y0 = (HEIGHT - total_h) // 2 - 20
 
-    # Subtitle
-    if subtitle:
-        bbox = draw2.textbbox((0, 0), subtitle, font=small)
-        sw = bbox[2] - bbox[0]
-        draw2.text(((WIDTH - sw) // 2, HEIGHT - 240), subtitle, font=small, fill=(255, 200, 0))
+    for i, line in enumerate(lines):
+        bbox = draw2.textbbox((0, 0), line, font=font)
+        lw = bbox[2] - bbox[0]
+        x = (WIDTH - lw) // 2
+        y = y0 + i * line_h
 
-    # Bottom — minimal elegant CTA
-    cta = "Follow for daily wealth insights"
-    bbox = draw2.textbbox((0, 0), cta, font=tiny)
-    cw = bbox[2] - bbox[0]
-    draw2.text(((WIDTH - cw) // 2, HEIGHT - 160), cta, font=tiny, fill=(180, 180, 180))
+        # Multi-layer shadow for depth
+        for sx, sy, salpha in [(5, 5, 200), (3, 3, 140), (1, 1, 80)]:
+            draw2.text((x + sx, y + sy), line, font=font, fill=(0, 0, 0, salpha))
+
+        # White text
+        draw2.text((x, y), line, font=font, fill=(255, 255, 255))
+
+    # Gold accent line under text
+    line_y = y0 + total_h + 18
+    accent_w = 120
+    draw2.rectangle(
+        [(WIDTH // 2 - accent_w // 2, line_y), (WIDTH // 2 + accent_w // 2, line_y + 3)],
+        fill=(212, 175, 55)
+    )
+
+    # Bottom CTA — only on non-hook clips to avoid clutter on the opener
+    if not is_hook:
+        cta_font = get_font(36)
+        cta = "Follow for daily wealth insights"
+        bbox = draw2.textbbox((0, 0), cta, font=cta_font)
+        cw = bbox[2] - bbox[0]
+        draw2.text(((WIDTH - cw) // 2, HEIGHT - 120), cta, font=cta_font, fill=(170, 170, 170))
 
     return np.array(img)
 
 
-def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
-    lines = [l.strip() for l in caption_text.split("\n")
-             if l.strip() and not l.startswith("#")]
-    hook = lines[0] if lines else "💰 Money tip"
-    body_lines = [l for l in lines[1:5] if l]
+def create_reel(captions: list[str], output_path: str = "/tmp/reel.mp4") -> str:
+    n_clips = len(captions)
+    used_ids: set = set()
+    queries = random.sample(LUXURY_QUERIES, min(len(LUXURY_QUERIES), n_clips * 2))
 
-    secs_per_word = 0.13
-    all_words = hook.split() + [w for l in body_lines for w in l.split()] + ["Follow", "for", "more."]
-    total_duration = max(15, len(all_words) * secs_per_word + 5)
+    # Download one clip per caption
+    bg_paths = []
+    q_idx = 0
+    for i in range(n_clips):
+        path = None
+        while path is None and q_idx < len(queries):
+            path = _fetch_one_video(queries[q_idx], used_ids)
+            q_idx += 1
+        if path:
+            bg_paths.append(path)
+        else:
+            print(f"WARNING: could not get clip {i+1}, reusing last")
+            if bg_paths:
+                bg_paths.append(bg_paths[-1])
 
-    # Download multiple unique luxury clips — no looping the same footage
-    from moviepy import concatenate_videoclips as cv
-    bg_paths = download_luxury_clips(total_duration)
-    def to_portrait(path):
-        clip = VideoFileClip(path)
-        if clip.w > clip.h:
-            # Landscape — center-crop to 9:16 so subject stays centered
-            target_w = int(clip.h * 9 / 16)
-            x1 = (clip.w - target_w) // 2
-            clip = clip.cropped(x1=x1, x2=x1 + target_w)
-        return clip.resized((WIDTH, HEIGHT))
+    if not bg_paths:
+        raise Exception("No luxury clips downloaded from Pexels")
 
-    raw_clips = [to_portrait(p) for p in bg_paths]
-    bg_clip = cv(raw_clips, method="chain") if len(raw_clips) > 1 else raw_clips[0]
-    bg_clip = bg_clip.subclipped(0, min(bg_clip.duration, total_duration + 2))
+    # Pad to n_clips if short
+    while len(bg_paths) < n_clips:
+        bg_paths.append(random.choice(bg_paths))
 
     clips = []
-    current_t = [0.0]
+    for i, (path, caption) in enumerate(zip(bg_paths, captions)):
+        is_hook = i == 0
+        # Hook clip holds a bit longer so the statement lands
+        clip_dur = random.uniform(1.4, 1.8) if is_hook else random.uniform(0.7, 1.2)
+        raw = to_portrait(path)
 
-    def make_segment(words, duration, subtitle="", font_size=88, instant=False):
-        n = len(words)
-        def frame_fn(t):
-            if instant:
-                # Show all words immediately — used for hook so it hits in frame 1
-                revealed = n
-            else:
-                revealed = min(n, int(t / secs_per_word))
-            bg_t = min(current_t[0] + t, bg_clip.duration - 0.1)
-            bg_frame = bg_clip.get_frame(bg_t)
-            return make_overlay_frame(bg_frame, words, revealed, font_size, subtitle)
-        clip = VideoClip(frame_fn, duration=duration)
-        current_t[0] += duration
-        return clip
+        # Start from a random point in the clip
+        max_start = max(0, raw.duration - clip_dur - 0.1)
+        start = random.uniform(0, max_start) if max_start > 0 else 0
+        segment = raw.subclipped(start, start + clip_dur)
 
-    # Hook — full text visible instantly so the first frame grabs attention
-    hook_words = hook.split()
-    clips.append(make_segment(hook_words,
-                               max(2.5, len(hook_words) * secs_per_word + 1.2),
-                               font_size=74, instant=True))
+        # Capture locals for closure
+        seg_ref = segment
+        cap_ref = caption
+        hook_ref = is_hook
 
-    # Body
-    for line in body_lines:
-        bwords = line.split()
-        if bwords:
-            clips.append(make_segment(bwords,
-                                       max(2.0, len(bwords) * secs_per_word + 0.6),
-                                       font_size=64))
+        def make_frame(t, _seg=seg_ref, _cap=cap_ref, _hook=hook_ref):
+            bg_t = min(t, _seg.duration - 1/FPS)
+            bg_frame = _seg.get_frame(bg_t)
+            return make_caption_frame(bg_frame, _cap, is_hook=_hook)
 
-    # CTA
-    cta_words = ["Follow", "@getwealthbyte", "for", "more."]
-    clips.append(make_segment(cta_words, 2.0,
-                               subtitle="Turn on notifications", font_size=64))
+        vc = VideoClip(make_frame, duration=clip_dur)
+        clips.append(vc)
+        print(f"Segment {i+1}/{n_clips} {'[HOOK]' if is_hook else ''}: '{caption}' ({clip_dur:.2f}s)")
 
-    video = concatenate_videoclips(clips, method="compose")
+    video = concatenate_videoclips(clips, method="chain")
 
-    # Add music
+    # Music
     music_file = ensure_music()
     if music_file:
         try:
-            from moviepy import concatenate_audioclips
             audio = AudioFileClip(music_file)
             if audio.duration < video.duration:
                 loops = int(video.duration / audio.duration) + 1
                 audio = concatenate_audioclips([audio] * loops)
-            audio = audio.subclipped(0, video.duration).with_volume_scaled(1.8)
+            audio = audio.subclipped(0, video.duration).with_volume_scaled(1.6)
             video = video.with_audio(audio)
-            print(f"Audio added, duration {video.duration:.1f}s")
+            print(f"Audio added, total duration: {video.duration:.1f}s")
         except Exception as e:
             print(f"Audio error: {e}")
 
@@ -311,20 +291,29 @@ def create_reel(caption_text: str, output_path: str = "/tmp/reel.mp4") -> str:
                        "-b:v", "4000k", "-b:a", "128k"],
         logger=None
     )
-    for p in bg_paths:
+
+    unique_paths = list(set(bg_paths))
+    for p in unique_paths:
         try:
             os.unlink(p)
         except Exception:
             pass
+
     return output_path
 
 
 if __name__ == "__main__":
-    test = (
-        "💰 Money tip: Delete shopping apps from your phone today.\n"
-        "Out of sight means out of mind — and out of your bank account.\n"
-        "Impulse purchases drop 30% when apps aren't one tap away.\n"
-        "Have you deleted any apps to save money?"
-    )
-    out = create_reel(test)
+    test_captions = [
+        "Wealth is silent.",
+        "Rich people buy assets.",
+        "Your job has a ceiling.",
+        "Invest before you spend.",
+        "Time compounds too.",
+        "Debt kills freedom.",
+        "Own, don't rent.",
+        "Think in decades.",
+        "The wealthy stay quiet.",
+        "Build while they sleep.",
+    ]
+    out = create_reel(test_captions)
     print(f"Reel saved: {out}")
