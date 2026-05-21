@@ -14,29 +14,36 @@ FPS = 30
 PEXELS_KEY = os.environ.get("PEXELS_KEY", "")
 
 LUXURY_QUERIES = [
+    # Supercars
     "supercar driving",
     "sports car driving",
     "exotic car",
     "luxury car interior",
     "supercar exhaust",
     "sports car close up",
-    "luxury car detail",
     "supercar wheel",
     "red sports car",
     "black luxury car",
+    # Scenic drives
+    "sports car coastal road",
+    "car mountain road sunset",
+    "supercar scenic drive",
+    "convertible sunset drive",
+    "car cliff road",
+    # Watches
     "luxury watch closeup",
     "luxury watch wrist",
-    "watch detail luxury",
+    "rolex watch",
+    "watch detail",
     "expensive watch",
-    "private jet interior",
+    # Lifestyle
     "champagne pouring",
+    "private jet interior",
     "luxury yacht deck",
     "penthouse view",
     "luxury hotel suite",
     "rooftop pool luxury",
-    "tailored suit",
     "luxury lifestyle",
-    "luxury shopping",
     "cigar luxury",
 ]
 
