@@ -14,62 +14,49 @@ FPS = 30
 PEXELS_KEY = os.environ.get("PEXELS_KEY", "")
 
 LUXURY_QUERIES = [
-    # Cars — specific models and shots
-    "Rolls Royce Cullinan",
-    "Rolls Royce Phantom driving",
-    "Lamborghini Aventador",
-    "Ferrari SF90",
-    "Mercedes Maybach S Class",
-    "Bentley Continental GT driving",
-    "Porsche 911 Turbo driving",
-    "Rolls Royce door opening",
-    "Lamborghini steering wheel interior",
-    "Ferrari interior luxury detail",
-    "luxury car valet",
-    "supercar rolling shot",
-    # Watches — brands and shots
-    "Rolex watch wrist closeup",
-    "Patek Philippe watch luxury",
-    "Audemars Piguet watch",
-    "Cartier watch luxury",
-    "luxury watch sunlight reflection",
-    "watch steering wheel shot",
-    "adjusting cufflinks watch",
-    # Places — cities and venues
-    "Dubai luxury hotel rooftop",
-    "Monaco yacht marina",
-    "Paris luxury hotel",
-    "Milan fashion luxury",
-    "London luxury lifestyle",
-    "luxury rooftop pool",
-    "designer store luxury shopping",
-    "oceanfront villa luxury",
-    "luxury beach club",
-    # Lifestyle — high performing clips
+    # Supercars — generic terms Pexels actually has
+    "supercar driving",
+    "sports car driving",
+    "exotic car",
+    "luxury car interior",
+    "supercar exhaust",
+    "sports car close up",
+    "luxury car detail",
+    "supercar wheel",
+    "red sports car",
+    "black luxury car",
+    # Watches
+    "luxury watch closeup",
+    "luxury watch wrist",
+    "watch detail luxury",
+    "expensive watch",
+    # Lifestyle
     "private jet interior",
-    "yacht lunch ocean",
-    "luxury hotel breakfast",
-    "tailored suit luxury",
-    "luxury shopping bags",
-    "champagne pour luxury",
-    "cigar lounge luxury",
-    "penthouse interior luxury",
-    "first class flight",
-    "ocean drive luxury car",
+    "champagne pouring",
+    "luxury yacht deck",
+    "penthouse view",
+    "luxury hotel suite",
+    "luxury shopping",
+    "rooftop pool luxury",
+    "tailored suit",
+    "cigar luxury",
+    "luxury lifestyle",
 ]
 
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
 
 MUSIC_URLS = [
-    # Chill electronic / dreamy / melodic — Petit Biscuit adjacent (Kevin MacLeod, royalty free)
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chill%20Wave.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dreamer.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Summer%20Day.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Floating%20Cities.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Smooth%20Lovin.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crinoline%20Dreams.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
+    # Chill house / smooth electronic (Kevin MacLeod, royalty free)
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Electro%20Cabello.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cool%20Vibes.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Groove%20Grove.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bass%20Vibes.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Backed%20Vibes%20Clean.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Smooth%20Lovin.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chill%20Wave.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deuces.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dreamer.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
 ]
 
 
