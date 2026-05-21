@@ -26,11 +26,12 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get install -y ffmpeg fonts-liberation fonts-dejavu
-          curl -fL "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/static/Montserrat-Bold.ttf" \
-            -o /usr/local/share/fonts/Montserrat-Bold.ttf \
-            || curl -fL "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Bold.ttf" \
-            -o /usr/local/share/fonts/Montserrat-Bold.ttf
-          fc-cache -f
+          mkdir -p /home/runner/.fonts
+          curl -fL "https://github.com/google/fonts/raw/refs/heads/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf" \
+            -o /home/runner/.fonts/Montserrat-Bold.ttf \
+            || curl -fL "https://github.com/google/fonts/raw/refs/heads/main/ofl/montserrat/static/Montserrat-Bold.ttf" \
+            -o /home/runner/.fonts/Montserrat-Bold.ttf
+          fc-cache -f -v
 
       - name: Install dependencies
         run: pip install anthropic requests moviepy pillow numpy

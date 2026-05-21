@@ -84,7 +84,8 @@ def ensure_music() -> str | None:
 
 def get_font(size: int):
     paths = [
-        "/usr/local/share/fonts/Montserrat-Bold.ttf",          # CI download
+        "/home/runner/.fonts/Montserrat-Bold.ttf",              # CI download
+        "/usr/local/share/fonts/Montserrat-Bold.ttf",
         "/usr/share/fonts/truetype/montserrat/Montserrat-Bold.ttf",
         "/System/Library/Fonts/Helvetica.ttc",                  # macOS
         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
