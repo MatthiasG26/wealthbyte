@@ -50,19 +50,19 @@ LUXURY_QUERIES = [
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
 
 MUSIC_URLS = [
-    # Upbeat house / electronic — more energy
+    # Electronic / house — all confirmed live
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Electro%20Cabello.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funky%20Chunk.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/RetroFuture%20Clean.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/RetroFuture%20Dirty.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tech%20Talk.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hyperfun.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Digital%20Lemonade.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Volatile%20Reaction.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neon%20Laser%20Horizon.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Club%20Diver.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cephalopod.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funky%20Chunk.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Disco%20Medusae.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Groove%20Grove.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bass%20Vibes.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Upbeat%20Forever.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Take%20the%20Lead.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Latin%20Industries.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Run%20Amok.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deuces.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
 ]
 
 
