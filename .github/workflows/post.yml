@@ -24,7 +24,11 @@ jobs:
           python-version: '3.11'
 
       - name: Install system dependencies
-        run: sudo apt-get install -y ffmpeg fonts-liberation fonts-dejavu
+        run: |
+          sudo apt-get install -y ffmpeg fonts-liberation fonts-dejavu
+          curl -fL "https://github.com/google/fonts/raw/main/ofl/montserrat/Montserrat-Bold.ttf" \
+            -o /usr/local/share/fonts/Montserrat-Bold.ttf
+          fc-cache -f
 
       - name: Install dependencies
         run: pip install anthropic requests moviepy pillow numpy

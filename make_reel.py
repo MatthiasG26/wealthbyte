@@ -84,10 +84,11 @@ def ensure_music() -> str | None:
 
 def get_font(size: int):
     paths = [
-        "/System/Library/Fonts/Helvetica.ttc",
+        "/usr/local/share/fonts/Montserrat-Bold.ttf",          # CI download
+        "/usr/share/fonts/truetype/montserrat/Montserrat-Bold.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",                  # macOS
         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
     ]
     for p in paths:
         if os.path.exists(p):
