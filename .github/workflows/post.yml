@@ -26,7 +26,9 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get install -y ffmpeg fonts-liberation fonts-dejavu
-          curl -fL "https://github.com/google/fonts/raw/main/ofl/montserrat/Montserrat-Bold.ttf" \
+          curl -fL "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/static/Montserrat-Bold.ttf" \
+            -o /usr/local/share/fonts/Montserrat-Bold.ttf \
+            || curl -fL "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Bold.ttf" \
             -o /usr/local/share/fonts/Montserrat-Bold.ttf
           fc-cache -f
 
