@@ -43,15 +43,18 @@ LUXURY_QUERIES = [
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
 
 MUSIC_URLS = [
+    # Upbeat house / electronic — more energy
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Electro%20Cabello.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cool%20Vibes.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funky%20Chunk.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Club%20Diver.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Disco%20Medusae.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Groove%20Grove.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bass%20Vibes.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Backed%20Vibes%20Clean.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Smooth%20Lovin.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chill%20Wave.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sunshine.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Take%20the%20Lead.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Latin%20Industries.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pumped%20Up.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deuces.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dreamer.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
 ]
 
@@ -159,7 +162,7 @@ def make_caption_frame(bg_frame: np.ndarray, caption: str, is_hook: bool = False
     draw2.text((52, 72), "@getwealthbyte", font=tiny, fill=(210, 210, 210))
 
     # Font size: hook clip gets bigger text to land the statement
-    font_size = 108 if is_hook else 88
+    font_size = 90 if is_hook else 72
     font = get_font(font_size)
 
     # Word wrap
@@ -179,7 +182,7 @@ def make_caption_frame(bg_frame: np.ndarray, caption: str, is_hook: bool = False
     if cur:
         lines.append(" ".join(cur))
 
-    line_h = font_size + 22
+    line_h = font_size + 18
     total_h = len(lines) * line_h
     y0 = (HEIGHT - total_h) // 2 - 20
 
@@ -246,7 +249,7 @@ def create_reel(captions: list[str], output_path: str = "/tmp/reel.mp4") -> str:
     for i, (path, caption) in enumerate(zip(bg_paths, captions)):
         is_hook = i == 0
         # Hook clip holds a bit longer so the statement lands
-        clip_dur = random.uniform(1.4, 1.8) if is_hook else random.uniform(0.7, 1.2)
+        clip_dur = random.uniform(1.8, 2.2) if is_hook else random.uniform(1.2, 1.6)
         raw = to_portrait(path)
 
         # Start from a random point in the clip
