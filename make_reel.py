@@ -57,10 +57,10 @@ MUSIC_URLS = [
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Disco%20Medusae.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Groove%20Grove.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bass%20Vibes.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sunshine.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Upbeat%20Forever.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Take%20the%20Lead.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Latin%20Industries.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pumped%20Up.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Run%20Amok.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deuces.mp3",
     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
 ]
