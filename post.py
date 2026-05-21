@@ -47,34 +47,38 @@ def generate_captions(content_type: str) -> list[str]:
         "mindset": "one quiet difference in how wealthy people think — old money mentality, not hustle culture",
     }
 
-    prompt = f"""You create clip-by-clip caption sequences for luxury wealth Instagram Reels (@getwealthbyte).
-Vibe: old money, cinematic, sharp. Like a luxury brand film cut to music.
+    prompt = f"""You create clip-by-clip caption sequences for a luxury wealth Instagram Reel (@getwealthbyte).
+Vibe: old money, cinematic, genuinely wise. Like a mentor who made it speaking plainly.
 
 Topic: {topic_hints.get(content_type, 'luxury wealth mindset')}
 
-Write a sequence of exactly 10 short captions. Together they must:
-1. Open with a hook that stops a scroll cold (3-6 words, bold statement or truth)
-2. Build the idea across clips 2-8 (each 1-4 words, each one adds to the message)
-3. Land with a closer that lingers (2-5 words, final punch)
+Write exactly 10 short captions that together deliver one real, actionable wealth insight.
+Think of it as a quote broken across 10 clips — each line reveals the next part of the idea.
+
+Structure:
+1. Hook (clip 1): bold truth that stops a scroll. 4-7 words. Something most people have never heard phrased this way.
+2. Build (clips 2-7): each line expands the idea with a specific, real, useful fact or insight. 2-5 words each. No filler.
+3. Close (clips 8-10): land the lesson. Make the viewer walk away knowing something they can actually use.
 
 Rules:
-- Each caption is 1-6 words MAX — no exceptions
-- Read in order, they tell the FULL wealth tip like a sentence spoken across cuts
-- No emoji. No hashtags. No question marks at the end. Statements only.
-- Vocabulary: precise, elevated, not basic. Think Rolex ad copy, not Reddit.
-- Do NOT use: "grind", "hustle", "boss", "sigma", "bro", "literally"
+- Every line must be genuinely useful — not just aesthetic. Teach something real.
+- Short lines only: 2-7 words max per clip
+- Specific over vague: "Index funds beat 92% of managers." not "Invest wisely."
+- No emoji. No hashtags. Statements only. No filler words.
+- Vocabulary: clear and direct. Smart but accessible. Not corporate, not cringe.
+- Do NOT use: "grind", "hustle", "boss", "sigma", "bro", "mindset", "journey"
 
-EXAMPLE OUTPUT (topic: saving money doesn't build wealth):
-Saving money is a trap.
-The wealthy don't save.
-They deploy.
-Every dollar is a soldier.
-Sent to fight for more.
-Savings sit idle.
-Investments compound.
-Learn the difference.
-Before it's too late.
-Start today.
+EXAMPLE OUTPUT (topic: compound interest):
+Most people misunderstand compound interest.
+It's not about returns.
+It's about time.
+$300 a month at 22.
+Becomes $1 million at 65.
+Same money, started at 32.
+Becomes $500,000.
+Ten years costs you half.
+Start before you're ready.
+Time is the only edge.
 
 OUTPUT FORMAT: One caption per line. No numbers. No quotes. No labels. Nothing else."""
 
