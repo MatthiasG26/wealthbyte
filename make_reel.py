@@ -50,19 +50,17 @@ LUXURY_QUERIES = [
 MUSIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music.mp3")
 
 MUSIC_URLS = [
-    # Chill house / smooth electronic — luxury rooftop bar vibe
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Electro%20Cabello.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Club%20Diver.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Disco%20Medusae.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Digital%20Lemonade.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Backed%20Vibes%20Clean.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Smooth%20Lovin.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chill%20Wave.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cool%20Vibes.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Groove%20Grove.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deuces.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dreamer.mp3",
-    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
+    # Instrumental piano & strings — luxury cinematic vibe
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Gymnopedie%20No%201.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Gymnopedie%20No%202.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Gymnopedie%20No%203.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Reawakening.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Windswept.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Shades%20of%20Spring.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Floating%20Cities.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heartbreaking.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Evening%20of%20Chaos.mp3",
+    "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Perspectives.mp3",
 ]
 
 
