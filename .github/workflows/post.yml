@@ -27,22 +27,8 @@ jobs:
         run: |
           sudo apt-get install -y ffmpeg fonts-liberation fonts-dejavu
           mkdir -p /home/runner/.fonts
-          pip install requests
-          python3 -c "
-import requests, os
-urls = [
-  'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/static/Montserrat-Bold.ttf',
-  'https://github.com/google/fonts/raw/main/ofl/montserrat/static/Montserrat-Bold.ttf',
-]
-for url in urls:
-    r = requests.get(url, timeout=30)
-    if r.status_code == 200 and len(r.content) > 10000:
-        open('/home/runner/.fonts/Montserrat-Bold.ttf','wb').write(r.content)
-        print('Font downloaded:', len(r.content), 'bytes')
-        break
-else:
-    print('Font download failed, will use fallback')
-"
+          wget -q "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/static/Montserrat-Bold.ttf" \
+            -O /home/runner/.fonts/Montserrat-Bold.ttf || echo "Font download failed, using fallback"
           fc-cache -f
 
       - name: Install dependencies
