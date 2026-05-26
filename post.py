@@ -294,6 +294,65 @@ def upload_video(video_path: str) -> str:
     return url
 
 
+def upload_to_youtube(video_path: str, title: str, description: str) -> bool:
+    """Upload video as a YouTube Short using OAuth refresh token."""
+    try:
+        from google.oauth2.credentials import Credentials
+        from google.auth.transport.requests import Request
+        from googleapiclient.discovery import build
+        from googleapiclient.http import MediaFileUpload
+    except ImportError:
+        print("YouTube libraries not installed, skipping YouTube upload")
+        return False
+
+    client_id     = os.environ.get("YT_CLIENT_ID", "")
+    client_secret = os.environ.get("YT_CLIENT_SECRET", "")
+    refresh_token = os.environ.get("YT_REFRESH_TOKEN", "")
+
+    if not all([client_id, client_secret, refresh_token]):
+        print("YouTube credentials not set, skipping YouTube upload")
+        return False
+
+    try:
+        creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            client_id=client_id,
+            client_secret=client_secret,
+            token_uri="https://oauth2.googleapis.com/token",
+            scopes=["https://www.googleapis.com/auth/youtube.upload"],
+        )
+        creds.refresh(Request())
+        youtube = build("youtube", "v3", credentials=creds)
+
+        body = {
+            "snippet": {
+                "title": title[:100],
+                "description": description[:5000],
+                "tags": ["wealth", "money", "finance", "personalfinance",
+                         "financialtips", "investing", "richhabits", "shorts"],
+                "categoryId": "22",  # People & Blogs
+            },
+            "status": {
+                "privacyStatus": "public",
+                "selfDeclaredMadeForKids": False,
+            },
+        }
+
+        media = MediaFileUpload(video_path, mimetype="video/mp4",
+                                chunksize=-1, resumable=True)
+        req = youtube.videos().insert(
+            part=",".join(body.keys()), body=body, media_body=media
+        )
+        response = req.execute()
+        yt_id = response.get("id", "unknown")
+        print(f"YouTube Short posted! https://youtube.com/shorts/{yt_id}")
+        return True
+    except Exception as e:
+        print(f"YouTube upload error: {e}")
+        return False
+
+
 def post_reel_to_instagram(caption: str, video_url: str) -> bool:
     # Step 1: Create reel container
     create_url = f"https://graph.instagram.com/v21.0/{INSTAGRAM_USER_ID}/media"
@@ -364,16 +423,21 @@ def main():
     create_reel(captions, video_path)
     print(f"Reel video created: {video_path}")
 
-    video_url = upload_video(video_path)
+    # YouTube — upload directly from file (no CDN needed)
+    yt_title = captions[0] if captions else "Wealth tip"
+    upload_to_youtube(video_path, yt_title, ig_caption)
 
-    success = post_reel_to_instagram(ig_caption, video_url)
+    # Instagram — needs a public CDN URL
+    video_url = upload_video(video_path)
+    ig_success = post_reel_to_instagram(ig_caption, video_url)
+
     os.unlink(video_path)
 
     # Clean up the temporary GitHub release now that Instagram is done with the URL
     if _gh_cleanup_fn:
         _gh_cleanup_fn()
 
-    if not success:
+    if not ig_success:
         sys.exit(1)
 
 

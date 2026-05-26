@@ -32,7 +32,7 @@ jobs:
           fc-cache -f
 
       - name: Install dependencies
-        run: pip install anthropic requests moviepy pillow numpy
+        run: pip install anthropic requests moviepy pillow numpy google-api-python-client google-auth-httplib2 google-auth-oauthlib
 
 
       - name: Run post
@@ -41,4 +41,7 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: python post.py
