@@ -214,6 +214,50 @@ def upload_video(video_path: str) -> str:
     return url
 
 
+def save_video_for_manual_youtube(video_path: str, quote_num: int, hook: str) -> str | None:
+    """Save the video to a permanent GitHub release so the user can download it
+    later and upload to YouTube manually (where YouTube's music library is usable)."""
+    try:
+        hdrs = _gh_headers()
+        repo = os.environ.get("GITHUB_REPOSITORY", "MatthiasG26/wealthbyte")
+
+        safe_hook = re.sub(r"[^A-Za-z0-9 ]+", "", hook)[:50].strip().replace(" ", "-") or "wealth-tip"
+        tag = f"yt-{quote_num:03d}-{safe_hook}"
+        title = f"#{quote_num:03d} — {hook}"
+
+        rel = requests.post(
+            f"https://api.github.com/repos/{repo}/releases",
+            headers=hdrs,
+            json={
+                "tag_name": tag,
+                "name": title,
+                "body": "Auto-saved Reel video for manual YouTube Shorts upload.",
+                "prerelease": False,
+            },
+            timeout=30,
+        ).json()
+        if "id" not in rel:
+            print(f"YouTube-archive release creation failed: {rel}")
+            return None
+
+        upload_url = rel["upload_url"].split("{")[0]
+        with open(video_path, "rb") as f:
+            asset = requests.post(
+                f"{upload_url}?name=reel.mp4",
+                headers={**hdrs, "Content-Type": "video/mp4"},
+                data=f,
+                timeout=180,
+            ).json()
+
+        url = asset.get("browser_download_url")
+        if url:
+            print(f"Saved for manual YouTube upload: {url}")
+        return url
+    except Exception as e:
+        print(f"Could not save video for manual YT upload: {e}")
+        return None
+
+
 def upload_to_youtube(video_path: str, title: str, description: str) -> bool:
     """Upload video as a YouTube Short using OAuth refresh token."""
     try:
@@ -332,6 +376,8 @@ def post_reel_to_instagram(caption: str, video_url: str) -> bool:
 def main():
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')} ET] Building reel from quote list...")
 
+    # Capture current quote number BEFORE incrementing for the archive title
+    quote_num = _read_quote_index() + 1
     quote = get_next_quote()
     captions = split_into_clips(quote["text"])
     print(f"Captions ({len(captions)}): {captions}")
@@ -345,9 +391,10 @@ def main():
     create_reel(captions, video_path)
     print(f"Reel video created: {video_path}")
 
-    # YouTube — upload directly from file (no CDN needed)
-    yt_title = captions[0] if captions else "Wealth tip"
-    upload_to_youtube(video_path, yt_title, ig_caption)
+    # Save the video to a permanent GitHub release so it can be downloaded
+    # and uploaded to YouTube manually (so YouTube's music library is available).
+    hook = captions[0] if captions else "Wealth tip"
+    save_video_for_manual_youtube(video_path, quote_num, hook)
 
     # Instagram — needs a public CDN URL
     video_url = upload_video(video_path)
