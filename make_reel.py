@@ -262,12 +262,12 @@ def create_reel(captions: list[str], output_path: str = "/tmp/reel.mp4") -> str:
     for i, (path, caption) in enumerate(zip(bg_paths, captions)):
         is_hook = i == 0
         # Clip duration scales with caption length so the viewer can actually read it.
-        # Min ~0.32s per word, plus a small floor for very short captions.
+        # ~0.5s per word + 0.6s baseline, with a slightly higher floor for short lines.
         word_count = max(1, len(caption.split()))
-        base = max(1.4, word_count * 0.36 + 0.4)
+        base = max(1.8, word_count * 0.5 + 0.6)
         if is_hook:
-            base += 0.6
-        clip_dur = round(random.uniform(base - 0.15, base + 0.25), 2)
+            base += 0.8
+        clip_dur = round(random.uniform(base - 0.15, base + 0.3), 2)
         raw = to_portrait(path)
 
         # Start from a random point in the clip
