@@ -4,15 +4,18 @@ WealthByte Instagram Reel Auto-Poster
 Generates and posts personal finance Reels to @getwealthbyte
 """
 
-import anthropic
 import requests
 import random
+import re
 import sys
 import os
 import time
 import tempfile
 from datetime import datetime, timezone, timedelta
 from make_reel import create_reel
+from quotes import QUOTES
+
+QUOTE_INDEX_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "quote_index.txt")
 
 INSTAGRAM_USER_ID = os.environ.get("IG_USER_ID", "17841467067743259")
 INSTAGRAM_TOKEN = os.environ.get("IG_TOKEN", "")
@@ -35,139 +38,48 @@ HASHTAGS = (
 _gh_cleanup_fn = None
 
 
-def generate_captions(content_type: str) -> list[str]:
-    """Generate 9-10 clip captions that together deliver one sharp wealth tip like a cinematic edit."""
-    client = anthropic.Anthropic()
-
-    topic_hints = {
-        "money_fact": "a financial truth most people were never taught — something that feels like insider knowledge",
-        "mistake_to_avoid": "one money habit that silently keeps people broke — something that makes the viewer feel called out",
-        "quick_tip": "one counterintuitive wealth move — contradicts what most people believe",
-        "how_it_works": "how one money concept works (compound interest, assets vs liabilities, index funds, net worth) — makes the viewer feel they just got an unlock",
-        "mindset": "one quiet difference in how wealthy people think — old money mentality, not hustle culture",
-    }
-
-    prompt = f"""You create clip-by-clip caption sequences for a luxury wealth Instagram Reel (@getwealthbyte).
-Vibe: old money, cinematic, genuinely wise. Like a mentor who made it speaking plainly.
-
-Topic: {topic_hints.get(content_type, 'luxury wealth mindset')}
-
-Write exactly 10 short captions that together deliver one real, actionable wealth insight.
-Think of it as a quote broken across 10 clips — each line reveals the next part of the idea.
-
-Structure:
-1. Hook (clip 1): bold truth that stops a scroll. 4-7 words. Something most people have never heard phrased this way.
-2. Build (clips 2-7): each line expands the idea with a specific, real, useful fact or insight. 2-5 words each. No filler.
-3. Close (clips 8-10): land the lesson. Make the viewer walk away knowing something they can actually use.
-
-Rules:
-- Every line must be genuinely useful — not just aesthetic. Teach something real.
-- Short lines only: 2-7 words max per clip
-- Specific over vague: "Index funds beat 92% of managers." not "Invest wisely."
-- No emoji. No hashtags. Statements only. No filler words.
-- Vocabulary: clear and direct. Smart but accessible. Not corporate, not cringe.
-- Do NOT use: "grind", "hustle", "boss", "sigma", "bro", "mindset", "journey"
-
-EXAMPLE OUTPUT (topic: compound interest):
-Most people misunderstand compound interest.
-It's not about returns.
-It's about time.
-$300 a month at 22.
-Becomes $1 million at 65.
-Same money, started at 32.
-Becomes $500,000.
-Ten years costs you half.
-Start before you're ready.
-Time is the only edge.
-
-OUTPUT FORMAT: One caption per line. No numbers. No quotes. No labels. Nothing else."""
-
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=250,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    lines = [l.strip() for l in message.content[0].text.strip().split("\n") if l.strip()]
-    lines = lines[:12]
-    while len(lines) < 8:
-        lines.append("Build in silence.")
-    print(f"Captions ({len(lines)}): {lines}")
-    return lines
+def _read_quote_index() -> int:
+    try:
+        with open(QUOTE_INDEX_FILE) as f:
+            return int(f.read().strip())
+    except (FileNotFoundError, ValueError):
+        return 0
 
 
-def generate_content(content_type: str) -> str:
-    client = anthropic.Anthropic()
+def _write_quote_index(idx: int):
+    with open(QUOTE_INDEX_FILE, "w") as f:
+        f.write(f"{idx}\n")
 
-    style = """You write scripts for a premium faceless finance Instagram page (@getwealthbyte).
-Vibe: old money, quiet luxury, cinematic. NOT sigma memes, fake guru, or grindset content.
 
-THE HOOK IS EVERYTHING. It must:
-- Stop someone mid-scroll in under 1 second
-- Say something TRUE that people have never heard phrased this way
-- Create a pattern interrupt — contradict a common belief or say the uncomfortable truth
-- Be under 42 characters. No emoji. No question mark. Statement only.
-- Make the viewer feel slightly called out OR suddenly curious
+def get_next_quote() -> dict:
+    """Pick the next quote in order, increment counter, return the quote dict."""
+    idx = _read_quote_index()
+    quote = QUOTES[idx % len(QUOTES)]
+    _write_quote_index(idx + 1)
+    print(f"Using quote {(idx % len(QUOTES)) + 1}/{len(QUOTES)} (run #{idx + 1})")
+    return quote
 
-BEST PERFORMING HOOK FORMULAS:
-• Uncomfortable truth: "Your job is designed to keep you dependent."
-• Contradiction: "Saving money is making you poorer."
-• Status flip: "The wealthy never talk about money."
-• Simple fact that hits hard: "Time, not money, is the real currency."
-• Reframe: "A Rolex isn't a flex. It's a lesson."
-• Unexpected insider truth: "Banks profit when you don't invest."
-• Identity challenge: "You're not broke. You're uninformed."
-• Counterintuitive: "The less you show, the richer you look."
-• Pattern interrupt: "Rich people hate cash."
-• Quiet luxury truth: "Noise is cheap. Silence is expensive."
 
-BODY (lines 2–4): Expand the hook with 3 SHORT punchy sentences.
-Each line = one clear idea. No filler. No corporate speak. Premium, direct, true.
-
-LAST LINE: A short question that makes people stop and comment. Genuine, not forced.
-
-FORMAT: Output only the lines separated by newlines. No labels. No quotes. No intro text."""
-
-    prompts = {
-        "money_fact": (
-            f"{style}\n\nWrite a script that reveals a financial truth most people were never taught. "
-            "Something that feels like insider knowledge. The hook should feel like a secret."
-        ),
-        "mistake_to_avoid": (
-            f"{style}\n\nWrite a script about one money behavior that silently keeps people broke. "
-            "The hook should make someone feel slightly called out."
-        ),
-        "quick_tip": (
-            f"{style}\n\nWrite a script with one wealth move that sounds counterintuitive but works. "
-            "The hook should contradict conventional advice."
-        ),
-        "how_it_works": (
-            f"{style}\n\nWrite a script that explains one concept — compound interest, assets vs liabilities, "
-            "index funds, net worth, credit, Roth IRA — in a way that makes the viewer feel like "
-            "they just learned something the wealthy already know. Hook should feel like an unlock."
-        ),
-        "mindset": (
-            f"{style}\n\nWrite a script about one quiet difference in how wealthy people think vs everyone else. "
-            "Not hustle culture. Old money mentality. The hook should be a truth that stings slightly."
-        ),
-    }
-
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=300,
-        messages=[
-            {
-                "role": "user",
-                "content": (
-                    f"{prompts[content_type]}\n\n"
-                    "Write ONLY the caption lines separated by newlines. No quotes."
-                ),
-            }
-        ],
-    )
-
-    caption = message.content[0].text.strip()
-    return f"{caption}\n\n{HASHTAGS}"
+def split_into_clips(text: str) -> list[str]:
+    """Split a quote into ~5-10 short clips by sentence, then by comma if a sentence is long."""
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+    clips = []
+    for s in sentences:
+        s_clean = s.rstrip(".!?")
+        words = s_clean.split()
+        if len(words) <= 7:
+            clips.append(s_clean)
+        else:
+            # Split by comma for longer sentences
+            parts = [p.strip() for p in s_clean.split(",") if p.strip()]
+            if len(parts) > 1:
+                clips.extend(parts)
+            else:
+                # No comma — split roughly in half
+                mid = len(words) // 2
+                clips.append(" ".join(words[:mid]))
+                clips.append(" ".join(words[mid:]))
+    return clips
 
 
 # ── GitHub Release upload (primary — reliable CDN Instagram can access) ────────
@@ -410,11 +322,13 @@ def post_reel_to_instagram(caption: str, video_url: str) -> bool:
 
 
 def main():
-    content_type = sys.argv[1] if len(sys.argv) > 1 else random.choice(CONTENT_TYPES)
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')} ET] Generating '{content_type}' reel...")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')} ET] Building reel from quote list...")
 
-    captions = generate_captions(content_type)
-    ig_caption = generate_content(content_type)
+    quote = get_next_quote()
+    captions = split_into_clips(quote["text"])
+    print(f"Captions ({len(captions)}): {captions}")
+
+    ig_caption = f"{quote['text']}\n\n{quote['description']}\n\n{HASHTAGS}"
     print(f"IG caption: {ig_caption[:80]}...")
 
     with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:

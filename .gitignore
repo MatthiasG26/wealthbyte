@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 /tmp/
 music.mp3
+client_secret_*.json

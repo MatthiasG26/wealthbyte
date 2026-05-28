@@ -166,8 +166,16 @@ def make_caption_frame(bg_frame: np.ndarray, caption: str, is_hook: bool = False
     tiny = get_font(34)
     draw2.text((52, 72), "@getwealthbyte", font=tiny, fill=(210, 210, 210))
 
-    # Font size: hook clip gets bigger text to land the statement
-    font_size = 90 if is_hook else 72
+    # Font size: adaptive to caption length so longer text still fits cleanly
+    word_count = len(caption.split())
+    if word_count <= 4:
+        font_size = 96 if is_hook else 76
+    elif word_count <= 7:
+        font_size = 82 if is_hook else 64
+    elif word_count <= 11:
+        font_size = 68 if is_hook else 54
+    else:
+        font_size = 58 if is_hook else 46
     font = get_font(font_size)
 
     # Word wrap
@@ -253,8 +261,13 @@ def create_reel(captions: list[str], output_path: str = "/tmp/reel.mp4") -> str:
     clips = []
     for i, (path, caption) in enumerate(zip(bg_paths, captions)):
         is_hook = i == 0
-        # Hook clip holds a bit longer so the statement lands
-        clip_dur = random.uniform(1.8, 2.2) if is_hook else random.uniform(1.2, 1.6)
+        # Clip duration scales with caption length so the viewer can actually read it.
+        # Min ~0.32s per word, plus a small floor for very short captions.
+        word_count = max(1, len(caption.split()))
+        base = max(1.4, word_count * 0.36 + 0.4)
+        if is_hook:
+            base += 0.6
+        clip_dur = round(random.uniform(base - 0.15, base + 0.25), 2)
         raw = to_portrait(path)
 
         # Start from a random point in the clip
