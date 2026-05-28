@@ -52,11 +52,19 @@ def _write_quote_index(idx: int):
 
 
 def get_next_quote() -> dict:
-    """Pick the next quote in order, increment counter, return the quote dict."""
+    """Pick the next quote in order, increment counter, return the quote dict.
+    Exits the workflow (without failure) once all quotes have been used."""
     idx = _read_quote_index()
-    quote = QUOTES[idx % len(QUOTES)]
+    if idx >= len(QUOTES):
+        print("=" * 60)
+        print(f"ALL {len(QUOTES)} QUOTES USED — TIME FOR A FRESH BATCH.")
+        print("Send a new list of quotes and they'll be loaded in.")
+        print("No post will go out until then.")
+        print("=" * 60)
+        sys.exit(0)
+    quote = QUOTES[idx]
     _write_quote_index(idx + 1)
-    print(f"Using quote {(idx % len(QUOTES)) + 1}/{len(QUOTES)} (run #{idx + 1})")
+    print(f"Using quote {idx + 1}/{len(QUOTES)}")
     return quote
 
 
