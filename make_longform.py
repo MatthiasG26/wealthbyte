@@ -14,7 +14,7 @@ from moviepy import (
 
 from make_reel import ensure_music
 
-WIDTH, HEIGHT = 1920, 1080  # 16:9 for YouTube long-form
+WIDTH, HEIGHT = 1280, 720  # 16:9 720p — renders ~3x faster than 1080p, still HD
 FPS = 30
 PEXELS_KEY = os.environ.get("PEXELS_KEY", "")
 ELEVENLABS_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
@@ -73,12 +73,12 @@ Vibe: cinematic, old money, quiet luxury. Documentary narrated by a calm, wise m
 
 TOPIC: {topic}
 
-Write the FULL spoken script. Target ~1,500 words (will run 9-10 minutes with voiceover at natural pace).
+Write the FULL spoken script. Target ~1,000 words (will run 6-7 minutes with voiceover at natural pace).
 
 STRUCTURE:
 1. HOOK (first ~40 words, ~15 seconds): bold opening that stops the scroll. Pattern interrupt, uncomfortable truth, or counterintuitive fact. No "Hey what's up guys."
 2. PROMISE (~80 words, next 30s): tell the viewer what they'll learn and why it actually matters to their life.
-3. BODY (6-8 sections, ~150-200 words each): each section reveals a specific principle, framework, or truth. Use real examples, specific numbers, named concepts. Each section should land one idea cleanly.
+3. BODY (4-5 sections, ~150-180 words each): each section reveals a specific principle, framework, or truth. Use real examples, specific numbers, named concepts. Each section should land one idea cleanly.
 4. CONCLUSION (~120 words): tie it together with a final insight. Soft, classy CTA — "If this resonates, subscribe." NOT "SMASH THAT LIKE BUTTON."
 
 STYLE RULES:
@@ -288,8 +288,9 @@ def build_video(audio_path: str, broll: list[tuple[str, float]], output_path: st
         output_path, fps=FPS, codec="libx264", audio_codec="aac",
         ffmpeg_params=["-pix_fmt", "yuv420p", "-profile:v", "main",
                        "-level", "4.0", "-movflags", "+faststart",
-                       "-b:v", "6000k", "-b:a", "192k"],
-        logger=None, threads=2,
+                       "-preset", "veryfast",
+                       "-b:v", "3500k", "-b:a", "160k"],
+        logger=None, threads=4,
     )
 
     for path, _ in broll:
