@@ -214,9 +214,12 @@ def upload_video(video_path: str) -> str:
     return url
 
 
-def save_video_for_manual_youtube(video_path: str, quote_num: int, hook: str) -> str | None:
+def save_video_for_manual_youtube(
+    video_path: str, quote_num: int, hook: str, full_caption: str, yt_title: str
+) -> str | None:
     """Save the video to a permanent GitHub release so the user can download it
-    later and upload to YouTube manually (where YouTube's music library is usable)."""
+    later and upload to YouTube manually (where YouTube's music library is usable).
+    The release body contains the title, full caption, and hashtags ready to copy."""
     try:
         hdrs = _gh_headers()
         repo = os.environ.get("GITHUB_REPOSITORY", "MatthiasG26/wealthbyte")
@@ -225,13 +228,23 @@ def save_video_for_manual_youtube(video_path: str, quote_num: int, hook: str) ->
         tag = f"yt-{quote_num:03d}-{safe_hook}"
         title = f"#{quote_num:03d} — {hook}"
 
+        body = (
+            f"## YouTube Title (copy this)\n\n"
+            f"```\n{yt_title}\n```\n\n"
+            f"## YouTube Description / Caption (copy this)\n\n"
+            f"```\n{full_caption}\n```\n\n"
+            f"---\n"
+            f"Download `reel.mp4` below → upload as a Short in the YouTube app → "
+            f"pick your music from the library → paste the title and description above."
+        )
+
         rel = requests.post(
             f"https://api.github.com/repos/{repo}/releases",
             headers=hdrs,
             json={
                 "tag_name": tag,
                 "name": title,
-                "body": "Auto-saved Reel video for manual YouTube Shorts upload.",
+                "body": body,
                 "prerelease": False,
             },
             timeout=30,
@@ -394,7 +407,8 @@ def main():
     # Save the video to a permanent GitHub release so it can be downloaded
     # and uploaded to YouTube manually (so YouTube's music library is available).
     hook = captions[0] if captions else "Wealth tip"
-    save_video_for_manual_youtube(video_path, quote_num, hook)
+    yt_title = f"{hook} #shorts"[:100]
+    save_video_for_manual_youtube(video_path, quote_num, hook, ig_caption, yt_title)
 
     # Instagram — needs a public CDN URL
     video_url = upload_video(video_path)
