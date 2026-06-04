@@ -69,24 +69,41 @@ def get_next_quote() -> dict:
 
 
 def split_into_clips(text: str) -> list[str]:
-    """Split a quote into ~5-10 short clips by sentence, then by comma if a sentence is long."""
-    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
-    clips = []
-    for s in sentences:
-        s_clean = s.rstrip(".!?")
-        words = s_clean.split()
-        if len(words) <= 7:
-            clips.append(s_clean)
-        else:
-            # Split by comma for longer sentences
-            parts = [p.strip() for p in s_clean.split(",") if p.strip()]
-            if len(parts) > 1:
-                clips.extend(parts)
-            else:
-                # No comma — split roughly in half
-                mid = len(words) // 2
-                clips.append(" ".join(words[:mid]))
-                clips.append(" ".join(words[mid:]))
+    """Split a quote into punchy 3-5 word clips for high-retention pacing.
+    Long sentences are broken at commas first, then sliced into 3-5 word chunks."""
+    MAX_WORDS = 5
+    MIN_WORDS = 3
+
+    # First, break the text into rough phrases by sentence + comma
+    rough = []
+    for sentence in re.split(r"(?<=[.!?])\s+", text):
+        sentence = sentence.strip().rstrip(".!?")
+        if not sentence:
+            continue
+        for part in sentence.split(","):
+            p = part.strip()
+            if p:
+                rough.append(p)
+
+    # Then slice each phrase into 3-5 word chunks
+    clips: list[str] = []
+    for phrase in rough:
+        words = phrase.split()
+        if len(words) <= MAX_WORDS:
+            clips.append(phrase)
+            continue
+        # Try to make even-sized chunks of ~4 words each
+        n_chunks = max(1, (len(words) + MAX_WORDS - 1) // MAX_WORDS)
+        chunk_size = (len(words) + n_chunks - 1) // n_chunks
+        chunk_size = max(MIN_WORDS, min(MAX_WORDS, chunk_size))
+        i = 0
+        while i < len(words):
+            # If the leftover after this chunk would be just 1-2 words, absorb them
+            remaining = len(words) - (i + chunk_size)
+            take = chunk_size + remaining if 0 < remaining < MIN_WORDS else chunk_size
+            clips.append(" ".join(words[i:i + take]))
+            i += take
+
     return clips
 
 
