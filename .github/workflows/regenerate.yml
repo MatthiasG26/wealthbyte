@@ -1,0 +1,48 @@
+name: Regenerate Release Videos
+
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: 'Start quote number (inclusive)'
+        required: true
+        default: '19'
+      end:
+        description: 'End quote number (inclusive)'
+        required: true
+        default: '69'
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update || true
+          sudo apt-get install -y --fix-missing ffmpeg fonts-liberation fonts-dejavu \
+            || sudo apt-get install -y --fix-missing ffmpeg fonts-liberation fonts-dejavu \
+            || sudo apt-get install -y ffmpeg
+          mkdir -p /home/runner/.fonts
+          wget -q "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/static/Montserrat-Bold.ttf" \
+            -O /home/runner/.fonts/Montserrat-Bold.ttf || echo "Font download failed"
+          fc-cache -f
+
+      - name: Install Python dependencies
+        run: pip install anthropic requests moviepy pillow numpy
+
+      - name: Regenerate releases
+        env:
+          PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python regenerate_release.py "${{ inputs.start }}" "${{ inputs.end }}"
